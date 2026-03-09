@@ -1,0 +1,29 @@
+Thursday Afternoon Group 3 Minutes
+Attendees: Kieran, Dang, Josh, Milly
+* The group discussed how to approach the assignment. Milly suggested we would try to get all tasks done when we can and when we have adequate knowledge, rather than delegating tasks to certain weeks. The group agreed.
+* The group looked through the strings example, and realised that it contained much of the tasks, but that it would have to be worked on and analysed.
+* The group worked on task B. We discussed that we would need to iterate through each item in the string and determine whether it was lowercase or uppercase using their ASCII values. We discovered that to change a letter from lowercase to uppercase, you would have to subtract 20 from its Hex value to change the case (and vice versa).
+* Dang explained a possible solution to the code, wherein the code would iterate through the items as desired, determining whether the item is within a certain range and responding to ensure that entire string is either lowercase or uppercase (depending on what is desired).
+* The group discussed how to input the code files into the GitHub repository. Josh suggested that each part would be a separate file, and the group agreed.
+* The group worked on updating the given example code to fit our purposes.
+* We ran thew code with a brief error at first. Dang noticed the error and fixed it.
+* The group run the code to ensure it ran smoothly. We succeeded.
+* Dang uploaded our part A into the GitHub.
+* The group determined the minimum and maximum values for the uppercase and lowercase regions and input this into the code.
+* We worked to figure out the lowercase code. We successfully did so.
+* The group discussed how to bring up the table showing the ASCII or Hex value table. Dang showed the group how to determine the hex value of an address and therefore find this table.
+* The group updated the code to input both the upper and lowercase loops, wherein the code determines what mode is desired, and then calls on the corresponding loop to ensure all letters are the same case (all upper/lower). 
+* We ran through the code to ensure that it worked successfully for both the uppercase and lowercase modes. We were successful in this. We all clapped.
+* We began working on part C of 5.1.2. Milly suggested that we should use our code from part A to find the message length, and then possibly “sew together” (a term coined by Kieran) each part. In this method, we use the original code for the message length. Then, use this message length and add this to index 2 (where the string body goes) to determine what index to put ETX.
+* We discussed further how to do this, Josh mentioned creating two loops (the first determining the length and the second assigning characters into the defined space – determined by the length).
+* We realised we didn’t need to do this; we could instead determine when the message does not read anything, and that is where we can add ETX.
+* Josh brought up the fact that the STX and ETX could not be added into the original string. Instead, the length in R2 would be our original string length plus three. The entire buffer with STX and ETX added should be stored in a new place in memory. This is similar to Milly’s suggestion but also realising that the message length’s default is 3 (start, length and stop being included).
+* Keiran and Dang explain how we define R2 as a pointer to the final value of the message length.
+* The group went through and ensured we understood each line of the code and its purpose.
+* We realise that the iteration through the string and adding it to the new place in memory is very similar to the code from part b.
+* We had problems with the string ending, changed a few bits of the code and sorted this out.
+* Dag figured it out and we all applauded.
+Action Items
+* Keep going through the tasks in the next lab.
+* Uploading all code into the GitHub.
+* Make sure to all come in having read through the next 3 or 4 tasks and understanding what we should do.
