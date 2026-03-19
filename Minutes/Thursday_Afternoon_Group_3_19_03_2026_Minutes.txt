@@ -1,0 +1,29 @@
+Gosh Dang Minutes
+Attendees: Kieran, Josh, Milly, Dang
+* Note Dang sends his apologies for the first hour of the tutorial.
+* The group decided to skip 5.1.2 d) and 5.1.2 e), as they required code which had not yet been uploaded into the Git by Dang. 
+* The group began reading through 5.2.2, and working on the first task. We realised the example code was quite similar and decided to analyse this code to ensure we understood it and to see where we could change it to suit our needs.
+* Josh discovered that we needed to take away the delay on the lights, so that they didn’t flash. The code then would loop through quickly, making all LEDs look like they were on at all times.
+* The group realised that we needed to stop the code from looping through. Once changing the code, we were able to create whatever patterns by changing the pattern loaded into R4. 
+* The group moved on to task 5.2.2 b). We struggled with using the button to increment through the LEDs. 
+* Milly suggested that we use code from last week as our counter and then incorporate the button.
+* The group worked on the code. Josh figured out how to change the code to ensure the load into R4 was a number instead of a bitmask, as well as incorporating the increment.
+* The group realised that the button was working but would not increment through. Milly suggested that we input the function for the button before the program loop, to ensure it loops through once the button is pressed.
+* Dang arrived at the tutorial and worked on adding his GitHub (which had not worked the previous time he tried).
+* The group decided to finish off 5.2.2 b) before going back to 5.1.2 d) and e).
+* Josh and Milly realised that one line of code (left shift logic by 8) was the thing that was making the LEDs not increment properly. The button press started working.
+* The group then ran into the problem that the LEDs would keep incrementing as the button was held. We realised we needed to make a function that made the LEDs wait until the button was released to increment.
+* Dang explained to the group that the code is making the STM32 read the user input as HIGH and keeps incrementing. So, we needed to make a function to keep the increment register in its current state until the user input is LOW. 
+* Josh was able to create this, but the code was not working. Milly suggested putting the “wait for release” function in the counter function.
+* The group worked through 5.1.2 d) and e) relatively quickly, having thought about it at home. Dang came in with innovative ideas about the code and was a great help.
+* Kieran had already begun reading through the next sections, so explained to the group what needed to be done in the code.
+* For part 5.2.2 c), Milly suggested changing the code to compare whether it has reached 8 or gotten to 0. She suggested to create another function ”compare” which then calls either “counter_up” or “counter_down” based on what is desired.
+* The group worked on the code together. Milly recognised that we needed to make sure that the code does not default to counting up, but instead keeps incrementing in the direction we desire.
+* Dang said we should set a variable to determine which state we are in (counting up or down).
+* The group further worked on the code, running into a problem that for one frame the LEDs were all off (after reaching all LEDs on). Dang realised that we had ginput 256 instead of 255. 
+* We celebrated with applause.
+* The group then worked through part d, realising we had already created a debouncing function in part D. We decided to change to value of this for part D to show the function of the debounce.
+* The group realised we could run the code for part e) similarly to how it was in part a) but just had to create a function for this. The group worked on this code.
+* Kieran comes up with great group name. Milly subsequently changes the titles for the previous meeting minutes.
+Action Items
+* The group agreed that, to get back onto the time schedule provided by the tutors, we should work on part 5.3.2 and 5.4.2 at home and come back in the next tutorial to discuss it. 
