@@ -1,18 +1,12 @@
 .syntax unified
 .thumb
+#include "definitions.s"
+
 
 .data
 @ This is where we define constants
-.equ MIN_LOWER_CASE, 0x61 @ Minimum hex value of a lower case character (a)
-.equ MAX_LOWER_CASE, 0x7A @ Maximum hex value of a lower case character (z)
-.equ MIN_UPPER_CASE, 0x41 @ Minimum hex value of a upper case character (A)
-.equ MAX_UPPER_CASE, 0x5A @ Maximum hex value of a upper case character (Z)
 
-.equ STX, 0x02 @ Hex value of the starting character in UART comm
-.equ ETX, 0x03 @ Hex value of the ending character in UART comm
-.equ UART_OVERHEAD, 3 @ Total overhead bytes added to packet: STX + Length byte + ETX
-.equ UART_BODY_OFFSET, 2 @ String body starts 2 bytes into buffer: [STX][Length][String Body...][ETX]
-.equ LENGTH_BYTE_IDX, 1 @ Index of the length byte in the buffer: [STX][Length byte here][...]
+
 .text
 /*
 This is where we define code
@@ -128,25 +122,40 @@ str_concat:
 
 end_concat:
     MOV  R3, #STX
-    STRB R3, [R1] @ Store STX at the start of the buffer at index 0
+    STRB R3, [R1] @ Store STX at index 0
 
+    @ Store NULL terminator right after the string body
+    ADD  R4, R2, #UART_BODY_OFFSET
+    MOV  R3, #0x0
+    STRB R3, [R1, R4] @ Store NULL after string body
+    ADDS R2, R2, #1 @ Advance past the NULL byte
+
+    @ Store ETX one position after NULL
     MOV  R3, #ETX
-    ADD  R4, R2, #UART_BODY_OFFSET  @ Compute buffer index = R2 + OFFSET (skip STX and Length byte)
-    STRB R3, [R1, R4]  @ Store ETX at the end of the string body
+    ADD  R4, R2, #UART_BODY_OFFSET
+    STRB R3, [R1, R4]  @ Store ETX after NULL
 
-    ADDS R2, R2, #UART_OVERHEAD  @ Add overhead count (STX + Length byte + ETX) to get total packet length
-    STRB R2, [R1, #LENGTH_BYTE_IDX] @ Store the total packet length into the Length byte slot in the buffer
-
+    ADDS R2, R2, #UART_OVERHEAD @ Add overhead to get total packet length
+    STRB R2, [R1, #LENGTH_BYTE_IDX] @ Store total length
     B str_done
 
 
 
-/* This function computes a BCC checksum by XORing all bytes in the buffer up to (not including) the checksum byte, then stores the result
-      + Input:  R1 = address of buffer, R4 = index where checksum byte will be stored, R5 = counter (set to 0), R3 = initial checksum value (set to 0x00)
-      + Output: R3 = final checksum value, stored at buffer[R4]
-      + Modifies: R3, R5, R6
+/* This function computes a BCC checksum by XORing all bytes in the buffer
+      + Input:  R1 = address of buffer, R2 = total packet length (NOT including checksum byte)
+      + Output: R2 = total packet length (including checksum byte), stored at buffer[LENGTH_BYTE_IDX]
+                R3 = final checksum value, stored at buffer[R4]
+      + Modifies: R2, R3, R4, R5, R6, R9
 */
 str_checksum:
+	MOV R5, #0x0 @ Set counter to 0
+	MOV R3, #0x0 @ Set initial checksum value to zero
+	MOV R4, R2 @ Set R4 to R2 to get the value of the length (which is not included checksum), so we can use theis length as index
+			   @ pointing to where the checksum byte need to be stored = index of ETX + 1 = length of message with out checksum
+	ADDS R2, R2, #1 @ Add value of R2 by 1 to include the checksum byte
+	STRB R2, [R1, #LENGTH_BYTE_IDX] @ Store total length
+
+str_checksum_loop:
 	CMP R5, R4 @ If this equal to the index where we want to store the checksum byte -> we have finished going through every bytes before the checksum
 	BEQ end_checksum
 
@@ -155,10 +164,14 @@ str_checksum:
 	EOR R3, R3, R6 @ XOR byte into checksum accumulator
 	ADDS R5, R5, #1 @ Move to the byte
 
-	B str_checksum
+	B str_checksum_loop
 
 end_checksum:
-	STRB R3, [R1, R4]
+	STRB R3, [R1, R4] @ Store checksum byte
+    ADD  R4, R4, #1 @ Move index past the checksum byte
+    MOV  R9, #0x0 @ NULL terminator value
+    STRB R9, [R1, R4]  @ Store NULL terminator after checksum
+
 	B str_done
 
 
@@ -168,6 +181,10 @@ end_checksum:
       + Modifies: R3, R5, R6
 */
 str_verify_checksum:
+    MOV R5, #0x0   @ Set counter to 0
+    MOV R3, #0x0   @ Set initial XOR accumulator to 0
+
+str_verify_loop:
 	CMP R5, R2 @ when the index = length -> we have passed the checksum byte -> we can stop the loop
 	BEQ str_done
 
@@ -176,7 +193,7 @@ str_verify_checksum:
 	EOR R3, R3, R6 @ XOR byte into checksum accumulator
 	ADDS R5, R5, #1 @ Move to the byte
 
-	B str_verify_checksum
+	B str_verify_loop
 
 
 /* This is a helper-function to return to the main function
