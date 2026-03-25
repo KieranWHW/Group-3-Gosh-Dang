@@ -1,194 +1,215 @@
 .syntax unified
 .thumb
+
 #include "definitions.s"
 
-
-.data
-@ define variables
-
-
 .text
-@ define code
-@ All functions in this module are prefixed with "str_" for clarity
-@ when used alongside functions from other modules (e.g. uart_, led_, gpio_)
+@ =============================================================
+@ String helper module
+@ =============================================================
+@ All functions in this module are prefixed with "str_".
+@ They are used by the UART and exercise integration modules.
 
 
-@ ========== Helper Functions ==========
-
-@ Reset the counter register R2 back to 0
-@ Should be called before any string operation that uses R2 as a counter
-@   + Input: None
+@ -------------------------------------------------------------
+@ str_reset_counter
+@ -------------------------------------------------------------
+@ Reset register R2 to 0 before a string / packet operation.
 @   + Output: R2 = 0
+.type str_reset_counter, %function
 str_reset_counter:
-	MOV R2, #0
-	BX LR
+    MOV R2, #0
+    BX LR
 
 
-@ Common return point for all string functions
-@   + Input: None
-@   + Output: None, returns to caller
+@ -------------------------------------------------------------
+@ str_done
+@ -------------------------------------------------------------
+@ Common return label used by simple string routines.
+.type str_done, %function
 str_done:
-	BX LR
+    BX LR
 
 
-@ ========== String Length ==========
-
-@ Count the number of characters in a NULL-terminated string
-@   + Input: R1 = address of the string, R2 = counter (set to 0 before calling)
-@   + Output: R2 = length of the string (not including the NULL terminator)
+@ -------------------------------------------------------------
+@ str_count
+@ -------------------------------------------------------------
+@ Count characters in a NUL-terminated string.
+@   + Input:  R1 = string address
+@             R2 = counter (set to 0 before call)
+@   + Output: R2 = length, excluding the NUL terminator
+@   + Modifies: R3
+.type str_count, %function
 str_count:
-	LDRB R3, [R1, R2] @ Load the character at index R2
+    LDRB R3, [R1, R2]
+    CMP  R3, #0x00
+    BEQ  str_done
 
-	CMP  R3, #0x0 @ Is it a NULL character - meaning is it the end of the string?
-	BEQ str_done
-
-	ADDS R2, R2, #1 @ Move to the next character
-	B str_count
+    ADDS R2, R2, #1
+    B    str_count
 
 
-@ ========== Case Conversion ==========
-
-@ Convert all upper case characters in a string to lower case
-@   + Input: R1 = address of the string, R3 = counter (set to 0 before calling)
-@   + Output: None, the string is modified in place
+@ -------------------------------------------------------------
+@ str_lower_case
+@ -------------------------------------------------------------
+@ Convert all uppercase ASCII letters in a string to lowercase.
+@   + Input:  R1 = string address
+@             R3 = counter (set to 0 before call)
+@   + Output: string modified in place
+@   + Modifies: R4
+.type str_lower_case, %function
 str_lower_case:
-	LDRB R4, [R1, R3] @ Load the character at index R3
+    LDRB R4, [R1, R3]
+    CMP  R4, #0x00
+    BEQ  str_done
 
-	CMP R4, #0x0 @ Is it the end of the string ?
-	BEQ str_done
+    CMP  R4, #MIN_UPPER_CASE
+    BLT  str_lc_next
+    CMP  R4, #MAX_UPPER_CASE
+    BGT  str_lc_next
 
-	CMP R4, #MIN_UPPER_CASE
-	BLT str_lc_next @ Not an upper case character -> skip conversion
-
-	CMP R4, #MAX_UPPER_CASE
-	BGT str_lc_next @ Not an upper case character -> skip conversion
-
-	ADDS R4, R4, #0x20 @ Adding 0x20 converts upper case -> lower case
-	STRB R4, [R1, R3] @ Store the converted character back into the string
-
-	ADDS R3, R3, #1 @ Move to the next character
-	B str_lower_case
+    ADDS R4, R4, #0x20
+    STRB R4, [R1, R3]
 
 str_lc_next:
-	ADDS R3, R3, #1
-	B str_lower_case
+    ADDS R3, R3, #1
+    B    str_lower_case
 
 
-@ Convert all lower case characters in a string to upper case
-@   + Input: R1 = address of the string, R3 = counter (set to 0 before calling)
-@   + Output: None, the string is modified in place
+@ -------------------------------------------------------------
+@ str_upper_case
+@ -------------------------------------------------------------
+@ Convert all lowercase ASCII letters in a string to uppercase.
+@   + Input:  R1 = string address
+@             R3 = counter (set to 0 before call)
+@   + Output: string modified in place
+@   + Modifies: R4
+.type str_upper_case, %function
 str_upper_case:
-	LDRB R4, [R1, R3] @ Load the character at index R3
+    LDRB R4, [R1, R3]
+    CMP  R4, #0x00
+    BEQ  str_done
 
-	CMP R4, #0x0 @ Is it the end of the string ?
-	BEQ str_done
+    CMP  R4, #MIN_LOWER_CASE
+    BLT  str_uc_next
+    CMP  R4, #MAX_LOWER_CASE
+    BGT  str_uc_next
 
-	CMP R4, #MIN_LOWER_CASE
-	BLT str_uc_next @ Not a lower case character -> skip conversion
-
-	CMP R4, #MAX_LOWER_CASE
-	BGT str_uc_next @ Not a lower case character -> skip conversion
-
-	SUBS R4, R4, #0x20 @ Subtracting 0x20 converts lower case -> upper case
-	STRB R4, [R1, R3] @ Store the converted character back into the string
-
-	ADDS R3, R3, #1 @ Move to the next character
-	B str_upper_case
+    SUBS R4, R4, #0x20
+    STRB R4, [R1, R3]
 
 str_uc_next:
-	ADDS R3, R3, #1
-	B str_upper_case
+    ADDS R3, R3, #1
+    B    str_upper_case
 
 
-@ ========== UART Packet Formatting ==========
-
-@ Format a string into a UART packet with the structure: [STX][Length][String Body][ETX]
-@ Length = number of string characters + UART_OVERHEAD (STX + Length byte + ETX)
-@   + Input:  R0 = address of source string, R1 = address of destination buffer, R2 = counter (set to 0)
-@   + Output: R2 = total packet length, buffer at R1 filled with the formatted packet
-@   + Modifies: R2, R3, R4
+@ -------------------------------------------------------------
+@ str_concat
+@ -------------------------------------------------------------
+@ Build a UART packet in the form:
+@   [STX][Length][String Body][NUL][ETX]
+@
+@ The checksum is appended later by str_checksum.
+@   + Input:  R0 = source string address
+@             R1 = destination buffer address
+@             R2 = counter / string index (set to 0 before call)
+@   + Output: R2 = packet length before checksum byte is appended
+@             destination buffer filled with framed payload
+@   + Modifies: R3, R4
+.type str_concat, %function
 str_concat:
     PUSH {R4, LR}
 
 str_concat_loop:
     LDRB R3, [R0, R2]
     CMP  R3, #0x00
-    BEQ  end_concat
+    BEQ  str_concat_finish
 
     ADD  R4, R2, #UART_BODY_OFFSET
     STRB R3, [R1, R4]
     ADDS R2, R2, #1
     B    str_concat_loop
 
-end_concat:
+str_concat_finish:
     MOV  R3, #STX
     STRB R3, [R1]
 
+    @ Append the source string NUL terminator into the packet body.
     ADD  R4, R2, #UART_BODY_OFFSET
-    MOV  R3, #0
+    MOV  R3, #0x00
     STRB R3, [R1, R4]
     ADDS R2, R2, #1
 
+    @ Append ETX after the NUL terminator.
     MOV  R3, #ETX
     ADD  R4, R2, #UART_BODY_OFFSET
     STRB R3, [R1, R4]
 
+    @ Store packet length before checksum is added.
     ADDS R2, R2, #UART_OVERHEAD
     STRB R2, [R1, #LENGTH_BYTE_IDX]
 
     POP {R4, PC}
 
 
-@ ========== Checksum Functions ==========
-
-@ Compute a BCC checksum by XORing all bytes in the buffer, then append it to the packet
-@   + Input:  R1 = address of buffer, R2 = total packet length (NOT including checksum byte)
-@   + Output: R2 = updated total packet length (now including checksum byte)
-@             R3 = final checksum value, stored at the end of the packet
-@   + Modifies: R2, R3, R4, R5, R6, R9
+@ -------------------------------------------------------------
+@ str_checksum
+@ -------------------------------------------------------------
+@ Compute the 8-bit XOR BCC checksum and append it to the packet.
+@   + Input:  R1 = packet buffer address
+@             R2 = packet length before checksum byte is appended
+@   + Output: R2 = updated packet length including checksum byte
+@             R3 = checksum byte
+@             checksum stored at end of packet
+@   + Modifies: R4, R5, R6, R9
+.type str_checksum, %function
 str_checksum:
     PUSH {R4, R5, R6, R9, LR}
 
-    MOV  R5, #0
-    MOV  R3, #0
-    MOV  R4, R2
-    ADDS R2, R2, #1
+    MOV  R5, #0                    @ byte index
+    MOV  R3, #0                    @ XOR accumulator
+    MOV  R4, R2                    @ original length before checksum
+    ADDS R2, R2, #1                @ new total length including checksum
     STRB R2, [R1, #LENGTH_BYTE_IDX]
 
 str_checksum_loop:
     CMP  R5, R4
-    BEQ  end_checksum
+    BEQ  str_checksum_done
 
     LDRB R6, [R1, R5]
     EOR  R3, R3, R6
     ADDS R5, R5, #1
     B    str_checksum_loop
 
-end_checksum:
-    STRB R3, [R1, R4]
+str_checksum_done:
+    STRB R3, [R1, R4]              @ checksum byte
     ADD  R4, R4, #1
     MOV  R9, #0
-    STRB R9, [R1, R4]
+    STRB R9, [R1, R4]              @ optional trailing NUL for convenience
 
     POP {R4, R5, R6, R9, PC}
 
 
-@ Verify the BCC checksum of a received UART packet
-@ XORing all bytes including the checksum should produce 0 if the packet is valid
-@   + Input:  R1 = address of buffer, R2 = total packet length (including checksum byte)
-@   + Output: R3 = 0x00 if valid, non-zero if corrupted
-@   + Modifies: R3, R5, R6
+@ -------------------------------------------------------------
+@ str_verify_checksum
+@ -------------------------------------------------------------
+@ Verify a BCC checksum.
+@ XORing every byte in a valid packet, including the checksum,
+@ should produce 0.
+@   + Input:  R1 = packet buffer address
+@             R2 = total packet length including checksum byte
+@   + Output: R3 = 0x00 if valid, non-zero if invalid
+@   + Modifies: R5, R6
+.type str_verify_checksum, %function
 str_verify_checksum:
-	MOV R5, #0x0 @ Set counter to 0
-	MOV R3, #0x0 @ Set initial XOR accumulator to 0
+    MOV R5, #0x00
+    MOV R3, #0x00
 
 str_verify_loop:
-	CMP R5, R2 @ Have we passed the checksum byte ?
-	BEQ str_done
+    CMP R5, R2
+    BEQ str_done
 
-	LDRB R6, [R1, R5]
-
-	EOR R3, R3, R6 @ XOR byte into checksum accumulator
-	ADDS R5, R5, #1 @ Move to the next byte
-
-	B str_verify_loop
+    LDRB R6, [R1, R5]
+    EOR  R3, R3, R6
+    ADDS R5, R5, #1
+    B    str_verify_loop
