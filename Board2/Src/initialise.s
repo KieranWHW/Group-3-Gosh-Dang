@@ -46,13 +46,6 @@ initialise_io:
 	ORR R1, R1, #(0xA << 20) @ set 10_10 = AF mode for both pins
 	STR R1, [R0, #MODER]
 
-	@ Configure PA1 as pull-down for gpio_do_task_pa0 exit input
-    LDR R0, =GPIOA
-    LDR R1, [R0, #PUPDR]
-    BIC R1, R1, #(0x3 << PA1_PUPDR_OFFSET)
-    ORR R1, R1, #(0x2 << PA1_PUPDR_OFFSET)   @ 10 = pull-down
-    STR R1, [R0, #PUPDR]
-
 	BX LR
 
 

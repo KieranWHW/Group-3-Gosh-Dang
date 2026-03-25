@@ -6,6 +6,11 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 S_SRCS += \
 ../Src/definitions.s \
+../Src/ex1_memory.s \
+../Src/ex2_gpio.s \
+../Src/ex3_uart.s \
+../Src/ex4_timer.s \
+../Src/ex5_combine.s \
 ../Src/gpio.s \
 ../Src/initialise.s \
 ../Src/led.s \
@@ -20,6 +25,11 @@ C_SRCS += \
 
 OBJS += \
 ./Src/definitions.o \
+./Src/ex1_memory.o \
+./Src/ex2_gpio.o \
+./Src/ex3_uart.o \
+./Src/ex4_timer.o \
+./Src/ex5_combine.o \
 ./Src/gpio.o \
 ./Src/initialise.o \
 ./Src/led.o \
@@ -32,6 +42,11 @@ OBJS += \
 
 S_DEPS += \
 ./Src/definitions.d \
+./Src/ex1_memory.d \
+./Src/ex2_gpio.d \
+./Src/ex3_uart.d \
+./Src/ex4_timer.d \
+./Src/ex5_combine.d \
 ./Src/gpio.d \
 ./Src/initialise.d \
 ./Src/led.d \
@@ -54,7 +69,7 @@ Src/%.o Src/%.su Src/%.cyclo: ../Src/%.c Src/subdir.mk
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/definitions.d ./Src/definitions.o ./Src/gpio.d ./Src/gpio.o ./Src/initialise.d ./Src/initialise.o ./Src/led.d ./Src/led.o ./Src/main.d ./Src/main.o ./Src/string.d ./Src/string.o ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/timer.d ./Src/timer.o ./Src/uart.d ./Src/uart.o
+	-$(RM) ./Src/definitions.d ./Src/definitions.o ./Src/ex1_memory.d ./Src/ex1_memory.o ./Src/ex2_gpio.d ./Src/ex2_gpio.o ./Src/ex3_uart.d ./Src/ex3_uart.o ./Src/ex4_timer.d ./Src/ex4_timer.o ./Src/ex5_combine.d ./Src/ex5_combine.o ./Src/gpio.d ./Src/gpio.o ./Src/initialise.d ./Src/initialise.o ./Src/led.d ./Src/led.o ./Src/main.d ./Src/main.o ./Src/string.d ./Src/string.o ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/timer.d ./Src/timer.o ./Src/uart.d ./Src/uart.o
 
 .PHONY: clean-Src
 

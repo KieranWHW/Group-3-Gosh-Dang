@@ -8,11 +8,7 @@
 #include "gpio.s"
 #include "led.s"
 #include "timer.s"
-#include "ex1_memory.s"
-#include "ex2_gpio.s"
-#include "ex3_uart.s"
-#include "ex4_timer.s"
-#include "ex5_combine.s"
+#include "ex5_combine_b2.s"
 
 .global main
 .type main, %function
@@ -23,7 +19,7 @@ main:
     BL enable_uart
     BL enable_timer
 
-    BL ex5_run_demo     @ swap this to ex1_, ex2_, ex3_, or ex4_ to select exercise
+    BL ex5_board2_run_demo
 
 end:
-    B end               @ infinite loop to prevent falling off into undefined memory
+    B end

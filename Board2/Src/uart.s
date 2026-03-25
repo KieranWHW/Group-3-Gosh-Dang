@@ -20,7 +20,8 @@ response_buf: .space 16 @ Buffer for the full formatted response packet
 @ Transmit a packet over UART4 TX (PC10) one byte at a time
 @ Polls the TXE flag in the ISR to wait until the transmit register is ready
 @   + Input: R1 = address of packet buffer, R2 = total packet length
-@   + Output: None, all bytes in the buffer are sent over UART
+@   + Output: Sends ACK or NAK response over UART, string body copied to R2 buffer if valid
+@             R0 = ACK (0x06) if valid, NAK (0x15) if any check failed
 @   + Modifies: R0, R3, R5, R6
 uart_transmit:
 	PUSH {R6, LR}
@@ -44,6 +45,7 @@ uart_transmit_loop:
 uart_transmit_done:
 	POP {R6, PC} @ Return to caller
 
+
 @ ========== Receive and Validate ==========
 
 @ Receive and validate an incoming UART packet, then copy the string body to a destination buffer
@@ -52,7 +54,6 @@ uart_transmit_done:
 @ Sends ACK if all checks pass, NAK if any check fails
 @   + Input: R1 = address of received packet, R2 = address of destination buffer
 @   + Output: Sends ACK or NAK response over UART, string body copied to R2 buffer if valid
-@             R0 = ACK (0x06) if valid, NAK (0x15) if any check failed
 @   + Modifies: R1, R2, R3, R4, R5, R8, R9, R10
 uart_read_check:
 	PUSH {LR}
@@ -128,7 +129,7 @@ nak_response:
 @ Packet structure: [STX][Length][ACK or NAK][0x00][ETX][Checksum]
 build_response:
 	@ Build a null-terminated source string from the single response byte
-	LDR R0, =ack_nak_src
+		LDR R0, =ack_nak_src
 	STRB R6, [R0] @ Store ACK or NAK byte at index 0
 	MOV R7, #0x0
 	STRB R7, [R0, #1] @ Store NULL terminator at index 1
