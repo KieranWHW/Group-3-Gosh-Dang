@@ -1,0 +1,12 @@
+Gosh Dang Minutes
+Attendees: Kieran, Josh, Dang, Milly
+* We met over zoom to discuss the code we worked on outside of class.
+* The group discussed what code had been completed and what hadn’t. We agreed to prioritise part 4 and 5 prior to the lab.
+* The group worked together over zoom, collating our work that we had done at home.
+* Dang shared his screen with us. We went through each line of code and discussed where it could be fixed and the differences between each of our code.
+* We successfully worked through parts 5.3.2b and c.
+* We went through the code we had done previously to ensure we all understood the code.
+Action Items:
+* We agreed to continue working on the code at home (as not everyone had finished working on parts 4 and 5 and we ran out of time.
+* We agreed to come together at 1pm before our lab presentation on Thursday at 4pm to discuss our code in person.
+* We agreed to discuss our code over our main messaging platform (Instagram) as we couldn’t find another suitable meeting time prior to this.
