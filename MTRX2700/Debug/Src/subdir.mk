@@ -11,6 +11,7 @@ S_SRCS += \
 ../Src/led.s \
 ../Src/main.s \
 ../Src/string.s \
+../Src/timer.s \
 ../Src/uart.s 
 
 C_SRCS += \
@@ -26,6 +27,7 @@ OBJS += \
 ./Src/string.o \
 ./Src/syscalls.o \
 ./Src/sysmem.o \
+./Src/timer.o \
 ./Src/uart.o 
 
 S_DEPS += \
@@ -35,6 +37,7 @@ S_DEPS += \
 ./Src/led.d \
 ./Src/main.d \
 ./Src/string.d \
+./Src/timer.d \
 ./Src/uart.d 
 
 C_DEPS += \
@@ -51,7 +54,7 @@ Src/%.o Src/%.su Src/%.cyclo: ../Src/%.c Src/subdir.mk
 clean: clean-Src
 
 clean-Src:
-	-$(RM) ./Src/definitions.d ./Src/definitions.o ./Src/gpio.d ./Src/gpio.o ./Src/initialise.d ./Src/initialise.o ./Src/led.d ./Src/led.o ./Src/main.d ./Src/main.o ./Src/string.d ./Src/string.o ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/uart.d ./Src/uart.o
+	-$(RM) ./Src/definitions.d ./Src/definitions.o ./Src/gpio.d ./Src/gpio.o ./Src/initialise.d ./Src/initialise.o ./Src/led.d ./Src/led.o ./Src/main.d ./Src/main.o ./Src/string.d ./Src/string.o ./Src/syscalls.cyclo ./Src/syscalls.d ./Src/syscalls.o ./Src/syscalls.su ./Src/sysmem.cyclo ./Src/sysmem.d ./Src/sysmem.o ./Src/sysmem.su ./Src/timer.d ./Src/timer.o ./Src/uart.d ./Src/uart.o
 
 .PHONY: clean-Src
 

@@ -6,5 +6,6 @@
 "./Src/string.o"
 "./Src/syscalls.o"
 "./Src/sysmem.o"
+"./Src/timer.o"
 "./Src/uart.o"
 "./Startup/startup_stm32f303vctx.o"
