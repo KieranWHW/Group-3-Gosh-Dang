@@ -5,21 +5,21 @@ Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
   0 .isr_vector   00000194  08000000  08000000  00001000  2**0
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  1 .text         000007f4  08000194  08000194  00001194  2**2
+  1 .text         000007c8  08000194  08000194  00001194  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       00000000  08000988  08000988  000021f4  2**0
+  2 .rodata       00000000  0800095c  0800095c  000021f4  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  3 .ARM.extab    00000000  08000988  08000988  000021f4  2**0
+  3 .ARM.extab    00000000  0800095c  0800095c  000021f4  2**0
                   CONTENTS, READONLY
-  4 .ARM          00000000  08000988  08000988  000021f4  2**0
+  4 .ARM          00000000  0800095c  0800095c  000021f4  2**0
                   CONTENTS, READONLY
-  5 .preinit_array 00000000  08000988  08000988  000021f4  2**0
+  5 .preinit_array 00000000  0800095c  0800095c  000021f4  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  08000988  08000988  00001988  2**2
+  6 .init_array   00000004  0800095c  0800095c  0000195c  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  7 .fini_array   00000004  0800098c  0800098c  0000198c  2**2
+  7 .fini_array   00000004  08000960  08000960  00001960  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  8 .data         000001f4  20000000  08000990  00002000  2**0
+  8 .data         000001f4  20000000  08000964  00002000  2**0
                   CONTENTS, ALLOC, LOAD, DATA
   9 .ccmram       00000000  10000000  10000000  000021f4  2**0
                   CONTENTS
@@ -29,21 +29,21 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  12 .ARM.attributes 00000030  00000000  00000000  000021f4  2**0
                   CONTENTS, READONLY
- 13 .debug_line   000003f8  00000000  00000000  00002224  2**0
+ 13 .debug_line   000003e7  00000000  00000000  00002224  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_line_str 000000c9  00000000  00000000  0000261c  2**0
+ 14 .debug_line_str 000000c9  00000000  00000000  0000260b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_info   00000055  00000000  00000000  000026e5  2**0
+ 15 .debug_info   00000055  00000000  00000000  000026d4  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_abbrev 00000038  00000000  00000000  0000273a  2**0
+ 16 .debug_abbrev 00000038  00000000  00000000  00002729  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_aranges 00000048  00000000  00000000  00002778  2**3
+ 17 .debug_aranges 00000048  00000000  00000000  00002768  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00000092  00000000  00000000  000027c0  2**0
+ 18 .debug_str    00000092  00000000  00000000  000027b0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_rnglists 00000019  00000000  00000000  00002852  2**0
+ 19 .debug_rnglists 00000019  00000000  00000000  00002842  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_frame  0000002c  00000000  00000000  0000286c  2**2
+ 20 .debug_frame  0000002c  00000000  00000000  0000285c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -62,7 +62,7 @@ Disassembly of section .text:
  80001aa:	bd10      	pop	{r4, pc}
  80001ac:	200001f4 	.word	0x200001f4
  80001b0:	00000000 	.word	0x00000000
- 80001b4:	08000970 	.word	0x08000970
+ 80001b4:	08000944 	.word	0x08000944
 
 080001b8 <frame_dummy>:
  80001b8:	b508      	push	{r3, lr}
@@ -74,7 +74,7 @@ Disassembly of section .text:
  80001c6:	bd08      	pop	{r3, pc}
  80001c8:	00000000 	.word	0x00000000
  80001cc:	200001f8 	.word	0x200001f8
- 80001d0:	08000970 	.word	0x08000970
+ 80001d0:	08000944 	.word	0x08000944
 
 080001d4 <enable_gpio_clocks>:
 @ Enable the clocks for GPIO peripherals we are using (Port A, C and E)
@@ -83,7 +83,7 @@ Disassembly of section .text:
 @   + Modifies: R0, R1
 enable_gpio_clocks:
 	LDR R0, =RCC
- 80001d4:	f8df 06a4 	ldr.w	r0, [pc, #1700]	@ 800087c <end+0x4>
+ 80001d4:	f8df 0678 	ldr.w	r0, [pc, #1656]	@ 8000850 <end+0x2>
 	LDR R1, [R0, #AHBENR]
  80001d8:	6941      	ldr	r1, [r0, #20]
 	ORR R1, R1, #((1 << PA_AHB_OFFSET) | (1 << PC_AHB_OFFSET) | (1 << PE_AHB_OFFSET))
@@ -100,15 +100,15 @@ enable_gpio_clocks:
 initialise_io:
 	@ Configure PE8-PE15 as general purpose output for driving LEDs
 	LDR R0, =GPIOE
- 80001e2:	f8df 069c 	ldr.w	r0, [pc, #1692]	@ 8000880 <end+0x8>
+ 80001e2:	f8df 0670 	ldr.w	r0, [pc, #1648]	@ 8000854 <end+0x6>
 	LDR R1, [R0, #MODER]
  80001e6:	6801      	ldr	r1, [r0, #0]
 	LDR R2, =0xFFFF0000 @ mask for PE8-15 mode fields (2 bits per pin)
- 80001e8:	f8df 2698 	ldr.w	r2, [pc, #1688]	@ 8000884 <end+0xc>
+ 80001e8:	f8df 266c 	ldr.w	r2, [pc, #1644]	@ 8000858 <end+0xa>
 	BIC R1, R1, R2 @ clear PE8-15 mode bits
  80001ec:	ea21 0102 	bic.w	r1, r1, r2
 	LDR R2, =0x55550000 @ output mode (01) for PE8-15
- 80001f0:	f8df 2694 	ldr.w	r2, [pc, #1684]	@ 8000888 <end+0x10>
+ 80001f0:	f8df 2668 	ldr.w	r2, [pc, #1640]	@ 800085c <end+0xe>
 	ORR R1, R1, R2
  80001f4:	ea41 0102 	orr.w	r1, r1, r2
 	STR R1, [R0, #MODER]
@@ -116,7 +116,7 @@ initialise_io:
 
 	@ Configure PC10 and PC11 to alternate function mode for UART4
 	LDR R0, =GPIOC
- 80001fa:	f8df 0690 	ldr.w	r0, [pc, #1680]	@ 800088c <end+0x14>
+ 80001fa:	f8df 0664 	ldr.w	r0, [pc, #1636]	@ 8000860 <end+0x12>
 	LDR R1, [R0, #MODER]
  80001fe:	6801      	ldr	r1, [r0, #0]
 	BIC R1, R1, #(0xF << 20) @ clear bits [23:20] for PC10 and PC11
@@ -169,7 +169,7 @@ enable_uart:
 @   + Modifies: R0, R1
 set_afrh:
 	LDR R0, =GPIOC
- 8000234:	f8df 0654 	ldr.w	r0, [pc, #1620]	@ 800088c <end+0x14>
+ 8000234:	f8df 0628 	ldr.w	r0, [pc, #1576]	@ 8000860 <end+0x12>
 	LDR R1, [R0, #AFRH]
  8000238:	6a41      	ldr	r1, [r0, #36]	@ 0x24
 	BIC R1, R1, #(0xFF << AFR10) @ clear AF fields for PC10 [11:8] and PC11 [15:12]
@@ -188,7 +188,7 @@ set_afrh:
 @   + Modifies: R0, R1
 enable_high_speed:
 	LDR R0, =GPIOC
- 8000246:	f8df 0644 	ldr.w	r0, [pc, #1604]	@ 800088c <end+0x14>
+ 8000246:	f8df 0618 	ldr.w	r0, [pc, #1560]	@ 8000860 <end+0x12>
 	LDR R1, [R0, #OSPEEDR]
  800024a:	6881      	ldr	r1, [r0, #8]
 	BIC R1, R1, #(0xF << OSPEEDR10) @ clear speed fields for PC10 and PC11
@@ -207,7 +207,7 @@ enable_high_speed:
 @   + Modifies: R0, R1
 enable_uart_clock:
 	LDR R0, =RCC
- 8000258:	f8df 0620 	ldr.w	r0, [pc, #1568]	@ 800087c <end+0x4>
+ 8000258:	f8df 05f4 	ldr.w	r0, [pc, #1524]	@ 8000850 <end+0x2>
 	LDR R1, [R0, #APB1ENR]
  800025c:	69c1      	ldr	r1, [r0, #28]
 	ORR R1, R1, #(1 << UART4EN) @ bit 19 enables UART4
@@ -224,7 +224,7 @@ enable_uart_clock:
 @   + Modifies: R0, R1
 set_baud_rate:
 	LDR R0, =UART4
- 8000266:	f8df 0628 	ldr.w	r0, [pc, #1576]	@ 8000890 <end+0x18>
+ 8000266:	f8df 05fc 	ldr.w	r0, [pc, #1532]	@ 8000864 <end+0x16>
 	MOV R1, #BAUD_RATE
  800026a:	f04f 0145 	mov.w	r1, #69	@ 0x45
 	STR R1, [R0, #UART_BRR]
@@ -239,7 +239,7 @@ set_baud_rate:
 @   + Modifies: R0, R1
 enable_uart_cr1:
 	LDR R0, =UART4
- 8000272:	f8df 061c 	ldr.w	r0, [pc, #1564]	@ 8000890 <end+0x18>
+ 8000272:	f8df 05f0 	ldr.w	r0, [pc, #1520]	@ 8000864 <end+0x16>
 	LDR R1, [R0, #UART_CR1]
  8000276:	6801      	ldr	r1, [r0, #0]
 	ORR R1, R1, #0xD @ enable UE, RE, TE
@@ -256,7 +256,7 @@ enable_uart_cr1:
 enable_timer:
 	@ Enable Timer 2 clock on the APB1 bus
 	LDR R0, =RCC
- 8000280:	f8df 05f8 	ldr.w	r0, [pc, #1528]	@ 800087c <end+0x4>
+ 8000280:	f8df 05cc 	ldr.w	r0, [pc, #1484]	@ 8000850 <end+0x2>
 	LDR R1, [R0, #APB1ENR]
  8000284:	69c1      	ldr	r1, [r0, #28]
 	ORR R1, R1, #(1 << TIM2EN)
@@ -555,7 +555,7 @@ uart_transmit:
     PUSH {R6, LR}
  8000366:	b540      	push	{r6, lr}
     LDR R0, =UART4
- 8000368:	f8df 0524 	ldr.w	r0, [pc, #1316]	@ 8000890 <end+0x18>
+ 8000368:	f8df 04f8 	ldr.w	r0, [pc, #1272]	@ 8000864 <end+0x16>
     MOV R6, #0
  800036c:	f04f 0600 	mov.w	r6, #0
 
@@ -703,7 +703,7 @@ uart_nak_response:
 uart_build_response:
     @ Build a temporary NUL-terminated 1-byte source string.
     LDR R0, =ack_nak_src
- 80003e8:	f8df 04a8 	ldr.w	r0, [pc, #1192]	@ 8000894 <end+0x1c>
+ 80003e8:	f8df 047c 	ldr.w	r0, [pc, #1148]	@ 8000868 <end+0x1a>
     STRB R6, [R0]
  80003ec:	7006      	strb	r6, [r0, #0]
     MOV R7, #0x00
@@ -713,7 +713,7 @@ uart_build_response:
 
     @ Frame the response packet.
     LDR R1, =response_buf
- 80003f4:	f8df 14a0 	ldr.w	r1, [pc, #1184]	@ 8000898 <end+0x20>
+ 80003f4:	f8df 1474 	ldr.w	r1, [pc, #1140]	@ 800086c <end+0x1e>
     BL str_reset_counter
  80003f8:	f7ff ff58 	bl	80002ac <str_reset_counter>
     BL str_concat
@@ -723,7 +723,7 @@ uart_build_response:
 
     @ Transmit the response.
     LDR R1, =response_buf
- 8000404:	f8df 1490 	ldr.w	r1, [pc, #1168]	@ 8000898 <end+0x20>
+ 8000404:	f8df 1464 	ldr.w	r1, [pc, #1124]	@ 800086c <end+0x1e>
     BL uart_transmit
  8000408:	f7ff ffad 	bl	8000366 <uart_transmit>
 
@@ -741,7 +741,7 @@ uart_receive_packet:
     PUSH {LR}
  8000410:	b500      	push	{lr}
     LDR R0, =UART4
- 8000412:	f8df 047c 	ldr.w	r0, [pc, #1148]	@ 8000890 <end+0x18>
+ 8000412:	f8df 0450 	ldr.w	r0, [pc, #1104]	@ 8000864 <end+0x16>
     MOV R6, #0
  8000416:	f04f 0600 	mov.w	r6, #0
 
@@ -822,7 +822,7 @@ gpio_pa0_debounce:
 	PUSH {R10}
  800045e:	f84d ad04 	str.w	sl, [sp, #-4]!
 	LDR R10, =0xFFFFF
- 8000462:	f8df a438 	ldr.w	sl, [pc, #1080]	@ 800089c <end+0x24>
+ 8000462:	f8df a40c 	ldr.w	sl, [pc, #1036]	@ 8000870 <end+0x22>
 
 08000466 <gpio_pa0_debounce_loop>:
 gpio_pa0_debounce_loop:
@@ -876,7 +876,7 @@ led_set_pattern:
 	PUSH {R9}
  800048a:	f84d 9d04 	str.w	r9, [sp, #-4]!
 	LDR R9, =GPIOE @ Load GPIOE base address
- 800048e:	f8df 93f0 	ldr.w	r9, [pc, #1008]	@ 8000880 <end+0x8>
+ 800048e:	f8df 93c4 	ldr.w	r9, [pc, #964]	@ 8000854 <end+0x6>
 	STRB R7, [R9, #ODR + 1] @ Write pattern to upper byte of ODR (PE8-PE15)
  8000492:	f889 7015 	strb.w	r7, [r9, #21]
 	POP {R9}
@@ -1119,7 +1119,7 @@ ex1_run_demo:
 
     @ ===== Task 5.1.2a — calculate string length =====
     LDR R1, =string1
- 800054c:	49d4      	ldr	r1, [pc, #848]	@ (80008a0 <end+0x28>)
+ 800054c:	49c9      	ldr	r1, [pc, #804]	@ (8000874 <end+0x26>)
     BL str_reset_counter        @ R2 = 0
  800054e:	f7ff fead 	bl	80002ac <str_reset_counter>
     BL str_count                @ R2 = length of string1 (not including NULL)
@@ -1151,9 +1151,9 @@ ex1_do_lower:
 ex1_case_done:
     @ ===== Task 5.1.2c — format packet [STX][Len][Body][ETX] =====
     LDR R0, =string1            @ R0 = source string
- 800056c:	48cc      	ldr	r0, [pc, #816]	@ (80008a0 <end+0x28>)
+ 800056c:	48c1      	ldr	r0, [pc, #772]	@ (8000874 <end+0x26>)
     LDR R1, =buffer             @ R1 = destination buffer
- 800056e:	49cd      	ldr	r1, [pc, #820]	@ (80008a4 <end+0x2c>)
+ 800056e:	49c2      	ldr	r1, [pc, #776]	@ (8000878 <end+0x2a>)
     BL str_reset_counter        @ R2 = 0
  8000570:	f7ff fe9c 	bl	80002ac <str_reset_counter>
     BL str_concat               @ R2 = total packet length
@@ -1204,7 +1204,7 @@ ex2_run_demo:
     BL led_set_pattern
  8000598:	f7ff ff77 	bl	800048a <led_set_pattern>
     LDR R8, =ex2_led_step       @ R8 = task to run on each button press
- 800059c:	f8df 8308 	ldr.w	r8, [pc, #776]	@ 80008a8 <end+0x30>
+ 800059c:	f8df 82dc 	ldr.w	r8, [pc, #732]	@ 800087c <end+0x2e>
     MOV R11, #TASK_MODE_ONCE    @ one step per tap, wait for button release
  80005a0:	f04f 0b00 	mov.w	fp, #0
     BL gpio_do_task_pa0         @ blocks until PA1 goes HIGH
@@ -1224,7 +1224,7 @@ ex2_timed_start:
     BL led_set_pattern
  80005ae:	f7ff ff6c 	bl	800048a <led_set_pattern>
     LDR R4, =led_dir            @ reset direction to counting up
- 80005b2:	4cbe      	ldr	r4, [pc, #760]	@ (80008ac <end+0x34>)
+ 80005b2:	4cb3      	ldr	r4, [pc, #716]	@ (8000880 <end+0x32>)
     MOV R5, #0
  80005b4:	f04f 0500 	mov.w	r5, #0
     STRB R5, [R4]
@@ -1249,7 +1249,7 @@ ex2_timed_loop:
 
     @ Wait one step period then advance the counter
     LDR R0, =EX2_AUTO_DELAY_US @ R0 = delay in ticks (1 us/tick at PSC=7)
- 80005cc:	48b8      	ldr	r0, [pc, #736]	@ (80008b0 <end+0x38>)
+ 80005cc:	48ad      	ldr	r0, [pc, #692]	@ (8000884 <end+0x36>)
     BL timer_delay_arr
  80005ce:	f7ff ffa4 	bl	800051a <timer_delay_arr>
     BL ex2_led_step
@@ -1273,7 +1273,7 @@ ex2_led_step:
  80005da:	b530      	push	{r4, r5, lr}
 
     LDR R4, =led_dir
- 80005dc:	4cb3      	ldr	r4, [pc, #716]	@ (80008ac <end+0x34>)
+ 80005dc:	4ca8      	ldr	r4, [pc, #672]	@ (8000880 <end+0x32>)
     LDRB R5, [R4]               @ R5 = current direction (0=up, 1=down)
  80005de:	7825      	ldrb	r5, [r4, #0]
 
@@ -1334,9 +1334,9 @@ ex3_run_demo:
     @ ===== Task 5.3.2a — build packet, transmit on button press =====
     @ Build the formatted packet once so ex3_task_transmit has something to send
     LDR R0, =ex3_msg            @ R0 = source string
- 800060a:	48aa      	ldr	r0, [pc, #680]	@ (80008b4 <end+0x3c>)
+ 800060a:	489f      	ldr	r0, [pc, #636]	@ (8000888 <end+0x3a>)
     LDR R1, =ex3_tx_buf         @ R1 = destination buffer
- 800060c:	49aa      	ldr	r1, [pc, #680]	@ (80008b8 <end+0x40>)
+ 800060c:	499f      	ldr	r1, [pc, #636]	@ (800088c <end+0x3e>)
     BL str_reset_counter        @ R2 = 0
  800060e:	f7ff fe4d 	bl	80002ac <str_reset_counter>
     BL str_concat               @ format [STX][Len][Body][ETX] -> R2 = packet length
@@ -1346,7 +1346,7 @@ ex3_run_demo:
 
     @ Each button press sends the complete packet over UART4
     LDR R8, =ex3_task_transmit  @ R8 = transmit wrapper
- 800061a:	f8df 82a0 	ldr.w	r8, [pc, #672]	@ 80008bc <end+0x44>
+ 800061a:	f8df 8274 	ldr.w	r8, [pc, #628]	@ 8000890 <end+0x42>
     MOV R11, #TASK_MODE_ONCE    @ one transmission per tap
  800061e:	f04f 0b00 	mov.w	fp, #0
     BL gpio_do_task_pa0         @ blocks until PA1 goes HIGH to exit
@@ -1356,9 +1356,9 @@ ex3_run_demo:
     @ R1 points to ex3_tx_buf (the packet we just built) as a single-board test
     @ For two-board comms: point R1 at a buffer filled by polling RXNE first
     LDR R1, =ex3_tx_buf         @ R1 = packet to validate
- 8000626:	49a4      	ldr	r1, [pc, #656]	@ (80008b8 <end+0x40>)
+ 8000626:	4999      	ldr	r1, [pc, #612]	@ (800088c <end+0x3e>)
     LDR R2, =ex3_rx_buf         @ R2 = destination buffer for the extracted string body
- 8000628:	4aa5      	ldr	r2, [pc, #660]	@ (80008c0 <end+0x48>)
+ 8000628:	4a9a      	ldr	r2, [pc, #616]	@ (8000894 <end+0x46>)
     BL uart_read_check          @ validates packet, copies body to R2, sends ACK or NAK
  800062a:	f7ff fead 	bl	8000388 <uart_read_check>
     @ To demonstrate: change BAUD_RATE in definitions.s to EX3_BAUD_9600 (833)
@@ -1378,7 +1378,7 @@ ex3_task_transmit:
     PUSH {LR}
  8000630:	b500      	push	{lr}
     LDR R1, =ex3_tx_buf                 @ point R1 to the packet buffer
- 8000632:	49a1      	ldr	r1, [pc, #644]	@ (80008b8 <end+0x40>)
+ 8000632:	4996      	ldr	r1, [pc, #600]	@ (800088c <end+0x3e>)
     LDRB R2, [R1, #LENGTH_BYTE_IDX]    @ read packet length from the header byte
  8000634:	784a      	ldrb	r2, [r1, #1]
     BL uart_transmit
@@ -1407,7 +1407,7 @@ ex4_run_demo:
     BL timer_start              @ start the counter (CEN=1)
  800064a:	f7ff ff2e 	bl	80004aa <timer_start>
     LDR R1, =DELAY_5MLOOP      @ R1 = 5,000,000 us = 5 seconds
- 800064e:	499d      	ldr	r1, [pc, #628]	@ (80008c4 <end+0x4c>)
+ 800064e:	4992      	ldr	r1, [pc, #584]	@ (8000898 <end+0x4a>)
     BL timer_delay
  8000650:	f7ff ff46 	bl	80004e0 <timer_delay>
     MOV R7, #0x0
@@ -1496,7 +1496,7 @@ ex4_blink_loop:
     MOV R4, #0                  @ reset LED1 counter
  80006b4:	f04f 0400 	mov.w	r4, #0
     LDR R0, =GPIOE
- 80006b8:	4871      	ldr	r0, [pc, #452]	@ (8000880 <end+0x8>)
+ 80006b8:	4866      	ldr	r0, [pc, #408]	@ (8000854 <end+0x6>)
     LDR R6, [R0, #ODR]
  80006ba:	6946      	ldr	r6, [r0, #20]
     EOR R6, R6, #(1 << 8)      @ toggle PE8
@@ -1519,7 +1519,7 @@ ex4_skip_led1:
     MOV R5, #0                  @ reset LED2 counter
  80006cc:	f04f 0500 	mov.w	r5, #0
     LDR R0, =GPIOE
- 80006d0:	486b      	ldr	r0, [pc, #428]	@ (8000880 <end+0x8>)
+ 80006d0:	4860      	ldr	r0, [pc, #384]	@ (8000854 <end+0x6>)
     LDR R6, [R0, #ODR]
  80006d2:	6946      	ldr	r6, [r0, #20]
     EOR R6, R6, #(1 << 9)      @ toggle PE9
@@ -1534,11 +1534,11 @@ ex4_skip_led2:
  80006da:	e7e2      	b.n	80006a2 <ex4_blink_loop>
 
 080006dc <ex5_run_demo>:
-@ Main loop for Board 1.
 @   + Output: none
 @   + Modifies: R0, R1, R2, R4
 .type ex5_run_demo, %function
 ex5_run_demo:
+    @ Prescaler: 7999 -> 1 MHz tick (8 MHz / 8000 = 1 us resolution)
     MOV R0, #7999
  80006dc:	f641 703f 	movw	r0, #7999	@ 0x1f3f
     BL timer_set_psc
@@ -1546,633 +1546,585 @@ ex5_run_demo:
     BL timer_start
  80006e4:	f7ff fee1 	bl	80004aa <timer_start>
 
-    @ Allow both boards to finish reset / startup.
+    @ Let both boards finish reset / boot before first TX
     LDR R0, =BOOT_DELAY_MS
  80006e8:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
     BL timer_delay_arr
  80006ec:	f7ff ff15 	bl	800051a <timer_delay_arr>
 
-    @ Clear any stale UART state before the first transaction.
-    BL ex5_uart_rx_recover
- 80006f0:	f000 f875 	bl	80007de <ex5_uart_rx_recover>
+    MOV R4, #0                      @ counter value (0-255, wraps)
+ 80006f0:	f04f 0400 	mov.w	r4, #0
 
-    MOV R4, #0                      @ counter value
- 80006f4:	f04f 0400 	mov.w	r4, #0
-
-080006f8 <ex5_transmit_loop>:
+080006f4 <ex5_transmit_loop>:
 
 ex5_transmit_loop:
-    @ Wait 1 second before sending the next packet.
+    @ Wait 1 second between packets
     LDR R0, =TX_PERIOD_MS
- 80006f8:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
+ 80006f4:	f44f 707a 	mov.w	r0, #1000	@ 0x3e8
     BL timer_delay_arr
- 80006fc:	f7ff ff0d 	bl	800051a <timer_delay_arr>
+ 80006f8:	f7ff ff0f 	bl	800051a <timer_delay_arr>
 
-    @ Convert counter value to ASCII at the end of "COUNTER = ".
+    @ Write ASCII digits for current counter into counter_buf+10
     LDR R1, =counter_buf
- 8000700:	4971      	ldr	r1, [pc, #452]	@ (80008c8 <end+0x50>)
+ 80006fc:	4967      	ldr	r1, [pc, #412]	@ (800089c <end+0x4e>)
     ADD R1, R1, #10
- 8000702:	f101 010a 	add.w	r1, r1, #10
+ 80006fe:	f101 010a 	add.w	r1, r1, #10
     MOV R0, R4
- 8000706:	4620      	mov	r0, r4
+ 8000702:	4620      	mov	r0, r4
     BL int_to_str
- 8000708:	f000 f88b 	bl	8000822 <int_to_str>
+ 8000704:	f000 f878 	bl	80007f8 <int_to_str>
 
-    @ Build framed UART packet into tx_buf.
+    @ Frame the full string: STX | LEN | body | NUL | ETX | checksum
     LDR R0, =counter_buf
- 800070c:	486e      	ldr	r0, [pc, #440]	@ (80008c8 <end+0x50>)
+ 8000708:	4864      	ldr	r0, [pc, #400]	@ (800089c <end+0x4e>)
     LDR R1, =tx_buf
- 800070e:	496f      	ldr	r1, [pc, #444]	@ (80008cc <end+0x54>)
+ 800070a:	4965      	ldr	r1, [pc, #404]	@ (80008a0 <end+0x52>)
     BL str_reset_counter
- 8000710:	f7ff fdcc 	bl	80002ac <str_reset_counter>
+ 800070c:	f7ff fdce 	bl	80002ac <str_reset_counter>
     BL str_concat
- 8000714:	f7ff fde9 	bl	80002ea <str_concat>
+ 8000710:	f7ff fdeb 	bl	80002ea <str_concat>
     BL str_checksum
- 8000718:	f7ff fe01 	bl	800031e <str_checksum>
+ 8000714:	f7ff fe03 	bl	800031e <str_checksum>
 
-    @ Clear stale RX bytes / errors before transmitting.
-    BL ex5_uart_rx_recover
- 800071c:	f000 f85f 	bl	80007de <ex5_uart_rx_recover>
+    @ Drain any stale bytes / clear ORE before transmitting
+    BL ex5_uart_clear_errors
+ 8000718:	f000 f85d 	bl	80007d6 <ex5_uart_clear_errors>
 
-    @ Transmit the full packet.
+    @ Transmit the packet; length is stored at the LENGTH_BYTE_IDX offset
     LDR R1, =tx_buf
- 8000720:	496a      	ldr	r1, [pc, #424]	@ (80008cc <end+0x54>)
+ 800071c:	4960      	ldr	r1, [pc, #384]	@ (80008a0 <end+0x52>)
     LDRB R2, [R1, #LENGTH_BYTE_IDX]
- 8000722:	784a      	ldrb	r2, [r1, #1]
+ 800071e:	784a      	ldrb	r2, [r1, #1]
     BL uart_transmit
- 8000724:	f7ff fe1f 	bl	8000366 <uart_transmit>
+ 8000720:	f7ff fe21 	bl	8000366 <uart_transmit>
 
-    @ Wait for framed ACK / NAK reply.
+    @ Poll for ACK / NAK within the 5-second window
     BL ex5_wait_ack
- 8000728:	f000 f80c 	bl	8000744 <ex5_wait_ack>
+ 8000724:	f000 f80c 	bl	8000740 <ex5_wait_ack>
     CMP R0, #ACK
- 800072c:	2806      	cmp	r0, #6
+ 8000728:	2806      	cmp	r0, #6
     BNE ex5_nak_or_timeout
- 800072e:	d104      	bne.n	800073a <ex5_nak_or_timeout>
+ 800072a:	d104      	bne.n	8000736 <ex5_nak_or_timeout>
 
-    @ ACK received.
+    @ ACK received: increment the counter (wraps at 256)
     ADD R4, R4, #1
- 8000730:	f104 0401 	add.w	r4, r4, #1
+ 800072c:	f104 0401 	add.w	r4, r4, #1
     AND R4, R4, #0xFF
- 8000734:	f004 04ff 	and.w	r4, r4, #255	@ 0xff
+ 8000730:	f004 04ff 	and.w	r4, r4, #255	@ 0xff
     B ex5_transmit_loop
- 8000738:	e7de      	b.n	80006f8 <ex5_transmit_loop>
+ 8000734:	e7de      	b.n	80006f4 <ex5_transmit_loop>
 
-0800073a <ex5_nak_or_timeout>:
+08000736 <ex5_nak_or_timeout>:
 
 ex5_nak_or_timeout:
+    @ NAK or timeout: visual alert and reset counter
     BL ex5_flash_3x
- 800073a:	f000 f83a 	bl	80007b2 <ex5_flash_3x>
+ 8000736:	f000 f838 	bl	80007aa <ex5_flash_3x>
     MOV R4, #0
- 800073e:	f04f 0400 	mov.w	r4, #0
+ 800073a:	f04f 0400 	mov.w	r4, #0
     B ex5_transmit_loop
- 8000742:	e7d9      	b.n	80006f8 <ex5_transmit_loop>
+ 800073e:	e7d9      	b.n	80006f4 <ex5_transmit_loop>
 
-08000744 <ex5_wait_ack>:
-@ Wait up to 5 seconds for a framed ACK / NAK packet.
-@   + Output: R0 = ACK / NAK / 0xFF (timeout or malformed)
+08000740 <ex5_wait_ack>:
+@ The timeout window is started fresh from TIM2 each call.
+@   + Output: R0 = ACK / NAK byte, or 0xFF on timeout / bad reply
 @   + Modifies: R0, R1, R2, R5, R6
 .type ex5_wait_ack, %function
 ex5_wait_ack:
     PUSH {R5, R6, LR}
- 8000744:	b560      	push	{r5, r6, lr}
+ 8000740:	b560      	push	{r5, r6, lr}
 
-    @ Start a fresh 5 second timeout window on TIM2.
+    @ Reload TIM2 ARR with the timeout window and force an
+    @ update event so the new value takes effect immediately
     LDR R5, =TIM2
- 8000746:	f04f 4580 	mov.w	r5, #1073741824	@ 0x40000000
+ 8000742:	f04f 4580 	mov.w	r5, #1073741824	@ 0x40000000
     LDR R6, =ACK_WAIT_MS
- 800074a:	f241 3688 	movw	r6, #5000	@ 0x1388
+ 8000746:	f241 3688 	movw	r6, #5000	@ 0x1388
     STR R6, [R5, #TIM_ARR]
- 800074e:	62ee      	str	r6, [r5, #44]	@ 0x2c
+ 800074a:	62ee      	str	r6, [r5, #44]	@ 0x2c
 
     MOV R6, #(1 << TIM_UG)
- 8000750:	f04f 0601 	mov.w	r6, #1
+ 800074c:	f04f 0601 	mov.w	r6, #1
     STR R6, [R5, #TIM_EGR]
- 8000754:	616e      	str	r6, [r5, #20]
+ 8000750:	616e      	str	r6, [r5, #20]
 
     LDR R6, [R5, #TIM_SR]
- 8000756:	692e      	ldr	r6, [r5, #16]
-    BIC R6, R6, #(1 << TIM_UIF)
- 8000758:	f026 0601 	bic.w	r6, r6, #1
+ 8000752:	692e      	ldr	r6, [r5, #16]
+    BIC R6, R6, #(1 << TIM_UIF)    @ clear stale update flag
+ 8000754:	f026 0601 	bic.w	r6, r6, #1
     STR R6, [R5, #TIM_SR]
- 800075c:	612e      	str	r6, [r5, #16]
+ 8000758:	612e      	str	r6, [r5, #16]
 
-0800075e <ex5_wait_loop>:
+0800075a <ex5_wait_loop>:
 
 ex5_wait_loop:
-    @ Clear receive-side UART errors if they appear while waiting.
-    BL ex5_uart_check_and_clear_errors
- 800075e:	f000 f84f 	bl	8000800 <ex5_uart_check_and_clear_errors>
-
-    @ Check whether a byte has arrived.
+    @ Check whether a byte has arrived on UART4
     LDR R6, =UART4
- 8000762:	4e4b      	ldr	r6, [pc, #300]	@ (8000890 <end+0x18>)
+ 800075a:	4e42      	ldr	r6, [pc, #264]	@ (8000864 <end+0x16>)
     LDR R0, [R6, #UART_ISR]
- 8000764:	69f0      	ldr	r0, [r6, #28]
+ 800075c:	69f0      	ldr	r0, [r6, #28]
     ANDS R0, R0, #(1 << RXNE)
- 8000766:	f010 0020 	ands.w	r0, r0, #32
+ 800075e:	f010 0020 	ands.w	r0, r0, #32
     BNE ex5_byte_received
- 800076a:	d106      	bne.n	800077a <ex5_byte_received>
+ 8000762:	d106      	bne.n	8000772 <ex5_byte_received>
 
-    @ Check timeout flag.
+    @ Check whether the 5-second timeout has elapsed
     LDR R6, =TIM2
- 800076c:	f04f 4680 	mov.w	r6, #1073741824	@ 0x40000000
+ 8000764:	f04f 4680 	mov.w	r6, #1073741824	@ 0x40000000
     LDR R0, [R6, #TIM_SR]
- 8000770:	6930      	ldr	r0, [r6, #16]
+ 8000768:	6930      	ldr	r0, [r6, #16]
     ANDS R0, R0, #(1 << TIM_UIF)
- 8000772:	f010 0001 	ands.w	r0, r0, #1
+ 800076a:	f010 0001 	ands.w	r0, r0, #1
     BNE ex5_timeout
- 8000776:	d119      	bne.n	80007ac <ex5_timeout>
+ 800076e:	d119      	bne.n	80007a4 <ex5_timeout>
 
     B ex5_wait_loop
- 8000778:	e7f1      	b.n	800075e <ex5_wait_loop>
+ 8000770:	e7f3      	b.n	800075a <ex5_wait_loop>
 
-0800077a <ex5_byte_received>:
+08000772 <ex5_byte_received>:
 
 ex5_byte_received:
-    @ Phase 1: read STX + length byte.
+    @ Phase 1: read STX + length byte
     LDR R1, =rx_buf
- 800077a:	4955      	ldr	r1, [pc, #340]	@ (80008d0 <end+0x58>)
+ 8000772:	494c      	ldr	r1, [pc, #304]	@ (80008a4 <end+0x56>)
     MOV R2, #2
- 800077c:	f04f 0202 	mov.w	r2, #2
+ 8000774:	f04f 0202 	mov.w	r2, #2
     BL uart_receive_packet
- 8000780:	f7ff fe46 	bl	8000410 <uart_receive_packet>
+ 8000778:	f7ff fe4a 	bl	8000410 <uart_receive_packet>
 
-    @ Basic reply sanity checks before reading the rest.
+    @ Sanity-check header before committing to reading the rest
     LDR R1, =rx_buf
- 8000784:	4952      	ldr	r1, [pc, #328]	@ (80008d0 <end+0x58>)
+ 800077c:	4949      	ldr	r1, [pc, #292]	@ (80008a4 <end+0x56>)
     LDRB R2, [R1]
- 8000786:	780a      	ldrb	r2, [r1, #0]
+ 800077e:	780a      	ldrb	r2, [r1, #0]
     CMP R2, #STX
- 8000788:	2a02      	cmp	r2, #2
+ 8000780:	2a02      	cmp	r2, #2
     BNE ex5_bad_reply
- 800078a:	d10c      	bne.n	80007a6 <ex5_bad_reply>
+ 8000782:	d10c      	bne.n	800079e <ex5_bad_reply>
 
     LDRB R2, [R1, #1]
- 800078c:	784a      	ldrb	r2, [r1, #1]
-    CMP R2, #MIN_REPLY_LEN
- 800078e:	2a04      	cmp	r2, #4
+ 8000784:	784a      	ldrb	r2, [r1, #1]
+    CMP R2, #4                      @ minimum framed reply: STX LEN ACK ETX
+ 8000786:	2a04      	cmp	r2, #4
     BLT ex5_bad_reply
- 8000790:	db09      	blt.n	80007a6 <ex5_bad_reply>
-    CMP R2, #MAX_REPLY_LEN
- 8000792:	2a10      	cmp	r2, #16
+ 8000788:	db09      	blt.n	800079e <ex5_bad_reply>
+    CMP R2, #16                     @ sanity upper bound
+ 800078a:	2a10      	cmp	r2, #16
     BGT ex5_bad_reply
- 8000794:	dc07      	bgt.n	80007a6 <ex5_bad_reply>
+ 800078c:	dc07      	bgt.n	800079e <ex5_bad_reply>
 
-    @ Phase 2: read the remaining bytes.
+    @ Phase 2: read the remaining (LEN - 2) bytes
     SUBS R2, R2, #2
- 8000796:	3a02      	subs	r2, #2
+ 800078e:	3a02      	subs	r2, #2
     ADD R1, R1, #2
- 8000798:	f101 0102 	add.w	r1, r1, #2
+ 8000790:	f101 0102 	add.w	r1, r1, #2
     BL uart_receive_packet
- 800079c:	f7ff fe38 	bl	8000410 <uart_receive_packet>
+ 8000794:	f7ff fe3c 	bl	8000410 <uart_receive_packet>
 
-    @ ACK / NAK payload byte is at index 2.
+    @ The ACK / NAK payload byte sits at index 2 of rx_buf
     LDR R1, =rx_buf
- 80007a0:	494b      	ldr	r1, [pc, #300]	@ (80008d0 <end+0x58>)
+ 8000798:	4942      	ldr	r1, [pc, #264]	@ (80008a4 <end+0x56>)
     LDRB R0, [R1, #2]
- 80007a2:	7888      	ldrb	r0, [r1, #2]
+ 800079a:	7888      	ldrb	r0, [r1, #2]
     POP {R5, R6, PC}
- 80007a4:	bd60      	pop	{r5, r6, pc}
+ 800079c:	bd60      	pop	{r5, r6, pc}
 
-080007a6 <ex5_bad_reply>:
+0800079e <ex5_bad_reply>:
 
 ex5_bad_reply:
     MOV R0, #0xFF
- 80007a6:	f04f 00ff 	mov.w	r0, #255	@ 0xff
+ 800079e:	f04f 00ff 	mov.w	r0, #255	@ 0xff
     POP {R5, R6, PC}
- 80007aa:	bd60      	pop	{r5, r6, pc}
+ 80007a2:	bd60      	pop	{r5, r6, pc}
 
-080007ac <ex5_timeout>:
+080007a4 <ex5_timeout>:
 
 ex5_timeout:
     MOV R0, #0xFF
- 80007ac:	f04f 00ff 	mov.w	r0, #255	@ 0xff
+ 80007a4:	f04f 00ff 	mov.w	r0, #255	@ 0xff
     POP {R5, R6, PC}
- 80007b0:	bd60      	pop	{r5, r6, pc}
+ 80007a8:	bd60      	pop	{r5, r6, pc}
 
-080007b2 <ex5_flash_3x>:
-@ Flash all LEDs 3 times with 0.5 s ON / 0.5 s OFF.
+080007aa <ex5_flash_3x>:
+@ Flash all LEDs 3 times: 0.5 s ON then 0.5 s OFF each cycle.
 @   + Output: none
 @   + Modifies: R0, R5, R7
 .type ex5_flash_3x, %function
 ex5_flash_3x:
     PUSH {R5, R7, LR}
- 80007b2:	b5a0      	push	{r5, r7, lr}
+ 80007aa:	b5a0      	push	{r5, r7, lr}
     MOV R5, #3
- 80007b4:	f04f 0503 	mov.w	r5, #3
+ 80007ac:	f04f 0503 	mov.w	r5, #3
 
-080007b8 <ex5_flash_loop>:
+080007b0 <ex5_flash_loop>:
 
 ex5_flash_loop:
     MOV R7, #0xFF
- 80007b8:	f04f 07ff 	mov.w	r7, #255	@ 0xff
+ 80007b0:	f04f 07ff 	mov.w	r7, #255	@ 0xff
     BL led_set_pattern
- 80007bc:	f7ff fe65 	bl	800048a <led_set_pattern>
+ 80007b4:	f7ff fe69 	bl	800048a <led_set_pattern>
     LDR R0, =LED_HALF_PERIOD_MS
- 80007c0:	f04f 0053 	mov.w	r0, #83	@ 0x53
+ 80007b8:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
     BL timer_delay_arr
- 80007c4:	f7ff fea9 	bl	800051a <timer_delay_arr>
+ 80007bc:	f7ff fead 	bl	800051a <timer_delay_arr>
 
     MOV R7, #0x00
- 80007c8:	f04f 0700 	mov.w	r7, #0
+ 80007c0:	f04f 0700 	mov.w	r7, #0
     BL led_set_pattern
- 80007cc:	f7ff fe5d 	bl	800048a <led_set_pattern>
+ 80007c4:	f7ff fe61 	bl	800048a <led_set_pattern>
     LDR R0, =LED_HALF_PERIOD_MS
- 80007d0:	f04f 0053 	mov.w	r0, #83	@ 0x53
+ 80007c8:	f44f 70fa 	mov.w	r0, #500	@ 0x1f4
     BL timer_delay_arr
- 80007d4:	f7ff fea1 	bl	800051a <timer_delay_arr>
+ 80007cc:	f7ff fea5 	bl	800051a <timer_delay_arr>
 
     SUBS R5, R5, #1
- 80007d8:	3d01      	subs	r5, #1
+ 80007d0:	3d01      	subs	r5, #1
     BNE ex5_flash_loop
- 80007da:	d1ed      	bne.n	80007b8 <ex5_flash_loop>
+ 80007d2:	d1ed      	bne.n	80007b0 <ex5_flash_loop>
 
     POP {R5, R7, PC}
- 80007dc:	bda0      	pop	{r5, r7, pc}
+ 80007d4:	bda0      	pop	{r5, r7, pc}
 
-080007de <ex5_uart_rx_recover>:
-@ Clear UART receive error flags and flush any stale RX bytes.
+080007d6 <ex5_uart_clear_errors>:
+@ Call this before every receive window to prevent ORE lockups.
 @   + Output: none
 @   + Modifies: R0, R5, R6
-.type ex5_uart_rx_recover, %function
-ex5_uart_rx_recover:
+.type ex5_uart_clear_errors, %function
+ex5_uart_clear_errors:
     PUSH {R5, R6, LR}
- 80007de:	b560      	push	{r5, r6, lr}
+ 80007d6:	b560      	push	{r5, r6, lr}
     LDR R5, =UART4
- 80007e0:	4d2b      	ldr	r5, [pc, #172]	@ (8000890 <end+0x18>)
+ 80007d8:	4d22      	ldr	r5, [pc, #136]	@ (8000864 <end+0x16>)
 
-    @ Clear RX error flags if set.
+    @ Check for overrun error (ORE) and clear it via ICR if set
     LDR R0, [R5, #UART_ISR]
- 80007e2:	69e8      	ldr	r0, [r5, #28]
-    ANDS R6, R0, #((1 << ORE) | (1 << FE) | (1 << NE))
- 80007e4:	f010 060e 	ands.w	r6, r0, #14
-    BEQ ex5_uart_flush_only
- 80007e8:	d002      	beq.n	80007f0 <ex5_uart_flush_loop>
+ 80007da:	69e8      	ldr	r0, [r5, #28]
+    ANDS R6, R0, #(1 << ORE)
+ 80007dc:	f010 0608 	ands.w	r6, r0, #8
+    BEQ ex5_uart_clear_rxne
+ 80007e0:	d002      	beq.n	80007e8 <ex5_uart_clear_rxne>
 
-    LDR R6, =((1 << ORECF) | (1 << FECF) | (1 << NECF))
- 80007ea:	f04f 060e 	mov.w	r6, #14
+    LDR R6, =(1 << ORECF)
+ 80007e2:	f04f 0608 	mov.w	r6, #8
     STR R6, [R5, #UART_ICR]
- 80007ee:	622e      	str	r6, [r5, #32]
+ 80007e6:	622e      	str	r6, [r5, #32]
 
-080007f0 <ex5_uart_flush_loop>:
+080007e8 <ex5_uart_clear_rxne>:
 
-ex5_uart_flush_only:
-ex5_uart_flush_loop:
+ex5_uart_clear_rxne:
+    @ Drain any bytes already sitting in RDR (clears RXNE)
     LDR R0, [R5, #UART_ISR]
- 80007f0:	69e8      	ldr	r0, [r5, #28]
+ 80007e8:	69e8      	ldr	r0, [r5, #28]
     ANDS R0, R0, #(1 << RXNE)
- 80007f2:	f010 0020 	ands.w	r0, r0, #32
-    BEQ ex5_uart_rx_recover_done
- 80007f6:	d002      	beq.n	80007fe <ex5_uart_rx_recover_done>
+ 80007ea:	f010 0020 	ands.w	r0, r0, #32
+    BEQ ex5_uart_rx_cleared
+ 80007ee:	d002      	beq.n	80007f6 <ex5_uart_rx_cleared>
 
     LDRB R6, [R5, #UART_RDR]
- 80007f8:	f895 6024 	ldrb.w	r6, [r5, #36]	@ 0x24
-    B ex5_uart_flush_loop
- 80007fc:	e7f8      	b.n	80007f0 <ex5_uart_flush_loop>
+ 80007f0:	f895 6024 	ldrb.w	r6, [r5, #36]	@ 0x24
+    B ex5_uart_clear_rxne
+ 80007f4:	e7f8      	b.n	80007e8 <ex5_uart_clear_rxne>
 
-080007fe <ex5_uart_rx_recover_done>:
+080007f6 <ex5_uart_rx_cleared>:
 
-ex5_uart_rx_recover_done:
+ex5_uart_rx_cleared:
     POP {R5, R6, PC}
- 80007fe:	bd60      	pop	{r5, r6, pc}
+ 80007f6:	bd60      	pop	{r5, r6, pc}
 
-08000800 <ex5_uart_check_and_clear_errors>:
-@ Any pending RX bytes are also flushed.
-@   + Output: none
-@   + Modifies: R0, R5, R6
-.type ex5_uart_check_and_clear_errors, %function
-ex5_uart_check_and_clear_errors:
-    PUSH {R5, R6, LR}
- 8000800:	b560      	push	{r5, r6, lr}
-    LDR R5, =UART4
- 8000802:	4d23      	ldr	r5, [pc, #140]	@ (8000890 <end+0x18>)
-
-    LDR R0, [R5, #UART_ISR]
- 8000804:	69e8      	ldr	r0, [r5, #28]
-    ANDS R6, R0, #((1 << ORE) | (1 << FE) | (1 << NE))
- 8000806:	f010 060e 	ands.w	r6, r0, #14
-    BEQ ex5_uart_err_done
- 800080a:	d009      	beq.n	8000820 <ex5_uart_err_done>
-
-    LDR R6, =((1 << ORECF) | (1 << FECF) | (1 << NECF))
- 800080c:	f04f 060e 	mov.w	r6, #14
-    STR R6, [R5, #UART_ICR]
- 8000810:	622e      	str	r6, [r5, #32]
-
-08000812 <ex5_uart_err_flush>:
-
-ex5_uart_err_flush:
-    LDR R0, [R5, #UART_ISR]
- 8000812:	69e8      	ldr	r0, [r5, #28]
-    ANDS R0, R0, #(1 << RXNE)
- 8000814:	f010 0020 	ands.w	r0, r0, #32
-    BEQ ex5_uart_err_done
- 8000818:	d002      	beq.n	8000820 <ex5_uart_err_done>
-
-    LDRB R6, [R5, #UART_RDR]
- 800081a:	f895 6024 	ldrb.w	r6, [r5, #36]	@ 0x24
-    B ex5_uart_err_flush
- 800081e:	e7f8      	b.n	8000812 <ex5_uart_err_flush>
-
-08000820 <ex5_uart_err_done>:
-
-ex5_uart_err_done:
-    POP {R5, R6, PC}
- 8000820:	bd60      	pop	{r5, r6, pc}
-
-08000822 <int_to_str>:
-@   + Input:  R0 = value, R1 = destination buffer
-@   + Output: destination buffer filled with ASCII digits + NUL
+080007f8 <int_to_str>:
+@   + Input:  R0 = value (unsigned), R1 = destination buffer
+@   + Output: buffer filled with ASCII decimal digits + NUL
 @   + Modifies: R2, R3, R4, R5
 .type int_to_str, %function
 int_to_str:
     PUSH {R4, R5, LR}
- 8000822:	b530      	push	{r4, r5, lr}
+ 80007f8:	b530      	push	{r4, r5, lr}
 
+    @ Special case: value is 0
     CMP R0, #0
- 8000824:	2800      	cmp	r0, #0
+ 80007fa:	2800      	cmp	r0, #0
     BNE int_to_str_extract
- 8000826:	d106      	bne.n	8000836 <int_to_str_extract>
+ 80007fc:	d106      	bne.n	800080c <int_to_str_extract>
 
-    MOV R2, #0x30
- 8000828:	f04f 0230 	mov.w	r2, #48	@ 0x30
+    MOV R2, #0x30                   @ '0'
+ 80007fe:	f04f 0230 	mov.w	r2, #48	@ 0x30
     STRB R2, [R1]
- 800082c:	700a      	strb	r2, [r1, #0]
+ 8000802:	700a      	strb	r2, [r1, #0]
     MOV R2, #0
- 800082e:	f04f 0200 	mov.w	r2, #0
+ 8000804:	f04f 0200 	mov.w	r2, #0
     STRB R2, [R1, #1]
- 8000832:	704a      	strb	r2, [r1, #1]
+ 8000808:	704a      	strb	r2, [r1, #1]
     POP {R4, R5, PC}
- 8000834:	bd30      	pop	{r4, r5, pc}
+ 800080a:	bd30      	pop	{r4, r5, pc}
 
-08000836 <int_to_str_extract>:
+0800080c <int_to_str_extract>:
 
 int_to_str_extract:
     MOV R3, #0                      @ digit count
- 8000836:	f04f 0300 	mov.w	r3, #0
+ 800080c:	f04f 0300 	mov.w	r3, #0
     MOV R5, #10
- 800083a:	f04f 050a 	mov.w	r5, #10
+ 8000810:	f04f 050a 	mov.w	r5, #10
 
-0800083e <int_to_str_digit_loop>:
+08000814 <int_to_str_digit_loop>:
 
 int_to_str_digit_loop:
+    @ Divide by 10; remainder is the next digit (least-significant first)
     UDIV R4, R0, R5
- 800083e:	fbb0 f4f5 	udiv	r4, r0, r5
-    MLS  R2, R4, R5, R0             @ remainder = R0 - R4*10
- 8000842:	fb04 0215 	mls	r2, r4, r5, r0
-    ADD  R2, R2, #0x30              @ convert digit to ASCII
- 8000846:	f102 0230 	add.w	r2, r2, #48	@ 0x30
+ 8000814:	fbb0 f4f5 	udiv	r4, r0, r5
+    MLS  R2, R4, R5, R0             @ R2 = R0 - (R0/10)*10
+ 8000818:	fb04 0215 	mls	r2, r4, r5, r0
+    ADD  R2, R2, #0x30              @ convert to ASCII digit
+ 800081c:	f102 0230 	add.w	r2, r2, #48	@ 0x30
     PUSH {R2}
- 800084a:	b404      	push	{r2}
+ 8000820:	b404      	push	{r2}
     ADDS R3, R3, #1
- 800084c:	3301      	adds	r3, #1
+ 8000822:	3301      	adds	r3, #1
     MOVS R0, R4
- 800084e:	0020      	movs	r0, r4
+ 8000824:	0020      	movs	r0, r4
     BNE int_to_str_digit_loop
- 8000850:	d1f5      	bne.n	800083e <int_to_str_digit_loop>
+ 8000826:	d1f5      	bne.n	8000814 <int_to_str_digit_loop>
 
-08000852 <int_to_str_write>:
+08000828 <int_to_str_write>:
 
 int_to_str_write:
+    @ Pop digits off the stack in reverse (most-significant first)
     POP  {R2}
- 8000852:	bc04      	pop	{r2}
+ 8000828:	bc04      	pop	{r2}
     STRB R2, [R1], #1
- 8000854:	f801 2b01 	strb.w	r2, [r1], #1
+ 800082a:	f801 2b01 	strb.w	r2, [r1], #1
     SUBS R3, R3, #1
- 8000858:	3b01      	subs	r3, #1
+ 800082e:	3b01      	subs	r3, #1
     BNE int_to_str_write
- 800085a:	d1fa      	bne.n	8000852 <int_to_str_write>
+ 8000830:	d1fa      	bne.n	8000828 <int_to_str_write>
 
     MOV R2, #0
- 800085c:	f04f 0200 	mov.w	r2, #0
-    STRB R2, [R1]
- 8000860:	700a      	strb	r2, [r1, #0]
+ 8000832:	f04f 0200 	mov.w	r2, #0
+    STRB R2, [R1]                   @ NUL terminator
+ 8000836:	700a      	strb	r2, [r1, #0]
 
     POP {R4, R5, PC}
- 8000862:	bd30      	pop	{r4, r5, pc}
+ 8000838:	bd30      	pop	{r4, r5, pc}
 
-08000864 <main>:
+0800083a <main>:
 
 .global main
 .type main, %function
 
 main:
     BL enable_gpio_clocks
- 8000864:	f7ff fcb6 	bl	80001d4 <enable_gpio_clocks>
+ 800083a:	f7ff fccb 	bl	80001d4 <enable_gpio_clocks>
     BL initialise_io
- 8000868:	f7ff fcbb 	bl	80001e2 <initialise_io>
+ 800083e:	f7ff fcd0 	bl	80001e2 <initialise_io>
     BL enable_uart
- 800086c:	f7ff fcd6 	bl	800021c <enable_uart>
+ 8000842:	f7ff fceb 	bl	800021c <enable_uart>
     BL enable_timer
- 8000870:	f7ff fd06 	bl	8000280 <enable_timer>
+ 8000846:	f7ff fd1b 	bl	8000280 <enable_timer>
 
     BL ex5_run_demo     @ swap this to ex1_, ex2_, ex3_, or ex4_ to select exercise
- 8000874:	f7ff ff32 	bl	80006dc <ex5_run_demo>
+ 800084a:	f7ff ff47 	bl	80006dc <ex5_run_demo>
 
-08000878 <end>:
+0800084e <end>:
 
 end:
     B end               @ infinite loop to prevent falling off into undefined memory
- 8000878:	e7fe      	b.n	8000878 <end>
- 800087a:	0000      	.short	0x0000
+ 800084e:	e7fe      	b.n	800084e <end>
 	LDR R0, =RCC
- 800087c:	40021000 	.word	0x40021000
+ 8000850:	40021000 	.word	0x40021000
 	LDR R0, =GPIOE
- 8000880:	48001000 	.word	0x48001000
+ 8000854:	48001000 	.word	0x48001000
 	LDR R2, =0xFFFF0000 @ mask for PE8-15 mode fields (2 bits per pin)
- 8000884:	ffff0000 	.word	0xffff0000
+ 8000858:	ffff0000 	.word	0xffff0000
 	LDR R2, =0x55550000 @ output mode (01) for PE8-15
- 8000888:	55550000 	.word	0x55550000
+ 800085c:	55550000 	.word	0x55550000
 	LDR R0, =GPIOC
- 800088c:	48000800 	.word	0x48000800
+ 8000860:	48000800 	.word	0x48000800
 	LDR R0, =UART4
- 8000890:	40004c00 	.word	0x40004c00
+ 8000864:	40004c00 	.word	0x40004c00
     LDR R0, =ack_nak_src
- 8000894:	20000000 	.word	0x20000000
+ 8000868:	20000000 	.word	0x20000000
     LDR R1, =response_buf
- 8000898:	20000002 	.word	0x20000002
+ 800086c:	20000002 	.word	0x20000002
 	LDR R10, =0xFFFFF
- 800089c:	000fffff 	.word	0x000fffff
+ 8000870:	000fffff 	.word	0x000fffff
     LDR R1, =string1
- 80008a0:	20000012 	.word	0x20000012
+ 8000874:	20000012 	.word	0x20000012
     LDR R1, =buffer             @ R1 = destination buffer
- 80008a4:	2000001a 	.word	0x2000001a
+ 8000878:	2000001a 	.word	0x2000001a
     LDR R8, =ex2_led_step       @ R8 = task to run on each button press
- 80008a8:	080005db 	.word	0x080005db
+ 800087c:	080005db 	.word	0x080005db
     LDR R4, =led_dir            @ reset direction to counting up
- 80008ac:	2000009a 	.word	0x2000009a
+ 8000880:	2000009a 	.word	0x2000009a
     LDR R0, =EX2_AUTO_DELAY_US @ R0 = delay in ticks (1 us/tick at PSC=7)
- 80008b0:	0007a120 	.word	0x0007a120
+ 8000884:	0007a120 	.word	0x0007a120
     LDR R0, =ex3_msg            @ R0 = source string
- 80008b4:	2000009b 	.word	0x2000009b
+ 8000888:	2000009b 	.word	0x2000009b
     LDR R1, =ex3_tx_buf         @ R1 = destination buffer
- 80008b8:	200000a3 	.word	0x200000a3
+ 800088c:	200000a3 	.word	0x200000a3
     LDR R8, =ex3_task_transmit  @ R8 = transmit wrapper
- 80008bc:	08000631 	.word	0x08000631
+ 8000890:	08000631 	.word	0x08000631
     LDR R2, =ex3_rx_buf         @ R2 = destination buffer for the extracted string body
- 80008c0:	20000123 	.word	0x20000123
+ 8000894:	20000123 	.word	0x20000123
     LDR R1, =DELAY_5MLOOP      @ R1 = 5,000,000 us = 5 seconds
- 80008c4:	004c4b40 	.word	0x004c4b40
+ 8000898:	004c4b40 	.word	0x004c4b40
     LDR R1, =counter_buf
- 80008c8:	200001a3 	.word	0x200001a3
+ 800089c:	200001a3 	.word	0x200001a3
     LDR R1, =tx_buf
- 80008cc:	200001b3 	.word	0x200001b3
+ 80008a0:	200001b3 	.word	0x200001b3
     LDR R1, =rx_buf
- 80008d0:	200001d3 	.word	0x200001d3
+ 80008a4:	200001d3 	.word	0x200001d3
 
-080008d4 <Reset_Handler>:
+080008a8 <Reset_Handler>:
 
   .section .text.Reset_Handler
   .weak Reset_Handler
   .type Reset_Handler, %function
 Reset_Handler:
   ldr   r0, =_estack
- 80008d4:	480d      	ldr	r0, [pc, #52]	@ (800090c <LoopForever+0x2>)
+ 80008a8:	480d      	ldr	r0, [pc, #52]	@ (80008e0 <LoopForever+0x2>)
   mov   sp, r0          /* set stack pointer */
- 80008d6:	4685      	mov	sp, r0
+ 80008aa:	4685      	mov	sp, r0
 /* Call the clock system initialization function.*/
   bl  SystemInit
- 80008d8:	f3af 8000 	nop.w
+ 80008ac:	f3af 8000 	nop.w
 
 /* Copy the data segment initializers from flash to SRAM */
   ldr r0, =_sdata
- 80008dc:	480c      	ldr	r0, [pc, #48]	@ (8000910 <LoopForever+0x6>)
+ 80008b0:	480c      	ldr	r0, [pc, #48]	@ (80008e4 <LoopForever+0x6>)
   ldr r1, =_edata
- 80008de:	490d      	ldr	r1, [pc, #52]	@ (8000914 <LoopForever+0xa>)
+ 80008b2:	490d      	ldr	r1, [pc, #52]	@ (80008e8 <LoopForever+0xa>)
   ldr r2, =_sidata
- 80008e0:	4a0d      	ldr	r2, [pc, #52]	@ (8000918 <LoopForever+0xe>)
+ 80008b4:	4a0d      	ldr	r2, [pc, #52]	@ (80008ec <LoopForever+0xe>)
   movs r3, #0
- 80008e2:	2300      	movs	r3, #0
+ 80008b6:	2300      	movs	r3, #0
   b LoopCopyDataInit
- 80008e4:	e002      	b.n	80008ec <LoopCopyDataInit>
+ 80008b8:	e002      	b.n	80008c0 <LoopCopyDataInit>
 
-080008e6 <CopyDataInit>:
+080008ba <CopyDataInit>:
 
 CopyDataInit:
   ldr r4, [r2, r3]
- 80008e6:	58d4      	ldr	r4, [r2, r3]
+ 80008ba:	58d4      	ldr	r4, [r2, r3]
   str r4, [r0, r3]
- 80008e8:	50c4      	str	r4, [r0, r3]
+ 80008bc:	50c4      	str	r4, [r0, r3]
   adds r3, r3, #4
- 80008ea:	3304      	adds	r3, #4
+ 80008be:	3304      	adds	r3, #4
 
-080008ec <LoopCopyDataInit>:
+080008c0 <LoopCopyDataInit>:
 
 LoopCopyDataInit:
   adds r4, r0, r3
- 80008ec:	18c4      	adds	r4, r0, r3
+ 80008c0:	18c4      	adds	r4, r0, r3
   cmp r4, r1
- 80008ee:	428c      	cmp	r4, r1
+ 80008c2:	428c      	cmp	r4, r1
   bcc CopyDataInit
- 80008f0:	d3f9      	bcc.n	80008e6 <CopyDataInit>
+ 80008c4:	d3f9      	bcc.n	80008ba <CopyDataInit>
 
 /* Zero fill the bss segment. */
   ldr r2, =_sbss
- 80008f2:	4a0a      	ldr	r2, [pc, #40]	@ (800091c <LoopForever+0x12>)
+ 80008c6:	4a0a      	ldr	r2, [pc, #40]	@ (80008f0 <LoopForever+0x12>)
   ldr r4, =_ebss
- 80008f4:	4c0a      	ldr	r4, [pc, #40]	@ (8000920 <LoopForever+0x16>)
+ 80008c8:	4c0a      	ldr	r4, [pc, #40]	@ (80008f4 <LoopForever+0x16>)
   movs r3, #0
- 80008f6:	2300      	movs	r3, #0
+ 80008ca:	2300      	movs	r3, #0
   b LoopFillZerobss
- 80008f8:	e001      	b.n	80008fe <LoopFillZerobss>
+ 80008cc:	e001      	b.n	80008d2 <LoopFillZerobss>
 
-080008fa <FillZerobss>:
+080008ce <FillZerobss>:
 
 FillZerobss:
   str  r3, [r2]
- 80008fa:	6013      	str	r3, [r2, #0]
+ 80008ce:	6013      	str	r3, [r2, #0]
   adds r2, r2, #4
- 80008fc:	3204      	adds	r2, #4
+ 80008d0:	3204      	adds	r2, #4
 
-080008fe <LoopFillZerobss>:
+080008d2 <LoopFillZerobss>:
 
 LoopFillZerobss:
   cmp r2, r4
- 80008fe:	42a2      	cmp	r2, r4
+ 80008d2:	42a2      	cmp	r2, r4
   bcc FillZerobss
- 8000900:	d3fb      	bcc.n	80008fa <FillZerobss>
+ 80008d4:	d3fb      	bcc.n	80008ce <FillZerobss>
 
 
 /* Call static constructors */
   bl __libc_init_array
- 8000902:	f000 f811 	bl	8000928 <__libc_init_array>
+ 80008d6:	f000 f811 	bl	80008fc <__libc_init_array>
 /* Call the application's entry point.*/
 
   bl main
- 8000906:	f7ff ffad 	bl	8000864 <main>
+ 80008da:	f7ff ffae 	bl	800083a <main>
 
-0800090a <LoopForever>:
+080008de <LoopForever>:
 
 LoopForever:
   b LoopForever
- 800090a:	e7fe      	b.n	800090a <LoopForever>
+ 80008de:	e7fe      	b.n	80008de <LoopForever>
   ldr   r0, =_estack
- 800090c:	2000a000 	.word	0x2000a000
+ 80008e0:	2000a000 	.word	0x2000a000
   ldr r0, =_sdata
- 8000910:	20000000 	.word	0x20000000
+ 80008e4:	20000000 	.word	0x20000000
   ldr r1, =_edata
- 8000914:	200001f4 	.word	0x200001f4
+ 80008e8:	200001f4 	.word	0x200001f4
   ldr r2, =_sidata
- 8000918:	08000990 	.word	0x08000990
+ 80008ec:	08000964 	.word	0x08000964
   ldr r2, =_sbss
- 800091c:	200001f4 	.word	0x200001f4
+ 80008f0:	200001f4 	.word	0x200001f4
   ldr r4, =_ebss
- 8000920:	20000210 	.word	0x20000210
+ 80008f4:	20000210 	.word	0x20000210
 
-08000924 <ADC1_2_IRQHandler>:
+080008f8 <ADC1_2_IRQHandler>:
  * @retval : None
 */
   .section .text.Default_Handler,"ax",%progbits
 Default_Handler:
 Infinite_Loop:
   b Infinite_Loop
- 8000924:	e7fe      	b.n	8000924 <ADC1_2_IRQHandler>
+ 80008f8:	e7fe      	b.n	80008f8 <ADC1_2_IRQHandler>
 	...
 
-08000928 <__libc_init_array>:
- 8000928:	b570      	push	{r4, r5, r6, lr}
- 800092a:	4b0d      	ldr	r3, [pc, #52]	@ (8000960 <__libc_init_array+0x38>)
- 800092c:	4d0d      	ldr	r5, [pc, #52]	@ (8000964 <__libc_init_array+0x3c>)
- 800092e:	1b5b      	subs	r3, r3, r5
- 8000930:	109c      	asrs	r4, r3, #2
- 8000932:	2600      	movs	r6, #0
- 8000934:	42a6      	cmp	r6, r4
- 8000936:	d109      	bne.n	800094c <__libc_init_array+0x24>
- 8000938:	f000 f81a 	bl	8000970 <_init>
- 800093c:	4d0a      	ldr	r5, [pc, #40]	@ (8000968 <__libc_init_array+0x40>)
- 800093e:	4b0b      	ldr	r3, [pc, #44]	@ (800096c <__libc_init_array+0x44>)
- 8000940:	1b5b      	subs	r3, r3, r5
- 8000942:	109c      	asrs	r4, r3, #2
- 8000944:	2600      	movs	r6, #0
- 8000946:	42a6      	cmp	r6, r4
- 8000948:	d105      	bne.n	8000956 <__libc_init_array+0x2e>
- 800094a:	bd70      	pop	{r4, r5, r6, pc}
- 800094c:	f855 3b04 	ldr.w	r3, [r5], #4
- 8000950:	4798      	blx	r3
- 8000952:	3601      	adds	r6, #1
- 8000954:	e7ee      	b.n	8000934 <__libc_init_array+0xc>
- 8000956:	f855 3b04 	ldr.w	r3, [r5], #4
- 800095a:	4798      	blx	r3
- 800095c:	3601      	adds	r6, #1
- 800095e:	e7f2      	b.n	8000946 <__libc_init_array+0x1e>
- 8000960:	08000988 	.word	0x08000988
- 8000964:	08000988 	.word	0x08000988
- 8000968:	08000988 	.word	0x08000988
- 800096c:	0800098c 	.word	0x0800098c
+080008fc <__libc_init_array>:
+ 80008fc:	b570      	push	{r4, r5, r6, lr}
+ 80008fe:	4b0d      	ldr	r3, [pc, #52]	@ (8000934 <__libc_init_array+0x38>)
+ 8000900:	4d0d      	ldr	r5, [pc, #52]	@ (8000938 <__libc_init_array+0x3c>)
+ 8000902:	1b5b      	subs	r3, r3, r5
+ 8000904:	109c      	asrs	r4, r3, #2
+ 8000906:	2600      	movs	r6, #0
+ 8000908:	42a6      	cmp	r6, r4
+ 800090a:	d109      	bne.n	8000920 <__libc_init_array+0x24>
+ 800090c:	f000 f81a 	bl	8000944 <_init>
+ 8000910:	4d0a      	ldr	r5, [pc, #40]	@ (800093c <__libc_init_array+0x40>)
+ 8000912:	4b0b      	ldr	r3, [pc, #44]	@ (8000940 <__libc_init_array+0x44>)
+ 8000914:	1b5b      	subs	r3, r3, r5
+ 8000916:	109c      	asrs	r4, r3, #2
+ 8000918:	2600      	movs	r6, #0
+ 800091a:	42a6      	cmp	r6, r4
+ 800091c:	d105      	bne.n	800092a <__libc_init_array+0x2e>
+ 800091e:	bd70      	pop	{r4, r5, r6, pc}
+ 8000920:	f855 3b04 	ldr.w	r3, [r5], #4
+ 8000924:	4798      	blx	r3
+ 8000926:	3601      	adds	r6, #1
+ 8000928:	e7ee      	b.n	8000908 <__libc_init_array+0xc>
+ 800092a:	f855 3b04 	ldr.w	r3, [r5], #4
+ 800092e:	4798      	blx	r3
+ 8000930:	3601      	adds	r6, #1
+ 8000932:	e7f2      	b.n	800091a <__libc_init_array+0x1e>
+ 8000934:	0800095c 	.word	0x0800095c
+ 8000938:	0800095c 	.word	0x0800095c
+ 800093c:	0800095c 	.word	0x0800095c
+ 8000940:	08000960 	.word	0x08000960
 
-08000970 <_init>:
- 8000970:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
- 8000972:	bf00      	nop
- 8000974:	bcf8      	pop	{r3, r4, r5, r6, r7}
- 8000976:	bc08      	pop	{r3}
- 8000978:	469e      	mov	lr, r3
- 800097a:	4770      	bx	lr
+08000944 <_init>:
+ 8000944:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+ 8000946:	bf00      	nop
+ 8000948:	bcf8      	pop	{r3, r4, r5, r6, r7}
+ 800094a:	bc08      	pop	{r3}
+ 800094c:	469e      	mov	lr, r3
+ 800094e:	4770      	bx	lr
 
-0800097c <_fini>:
- 800097c:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
- 800097e:	bf00      	nop
- 8000980:	bcf8      	pop	{r3, r4, r5, r6, r7}
- 8000982:	bc08      	pop	{r3}
- 8000984:	469e      	mov	lr, r3
- 8000986:	4770      	bx	lr
+08000950 <_fini>:
+ 8000950:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
+ 8000952:	bf00      	nop
+ 8000954:	bcf8      	pop	{r3, r4, r5, r6, r7}
+ 8000956:	bc08      	pop	{r3}
+ 8000958:	469e      	mov	lr, r3
+ 800095a:	4770      	bx	lr

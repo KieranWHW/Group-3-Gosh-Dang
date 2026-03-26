@@ -67,12 +67,9 @@
 .equ TC,        6       @ Transmission complete flag in UART_ISR
 .equ TCCF,      6       @ Transmission complete clear flag in UART_ICR
 .equ UART_ICR,  0x20
-.equ FE,        1
-.equ NE,        2
 .equ ORE,       3
-.equ FECF,      1
-.equ NECF,      2
 .equ ORECF,     3
+
 
 @ =============================================
 @ Timer 2 Settings
