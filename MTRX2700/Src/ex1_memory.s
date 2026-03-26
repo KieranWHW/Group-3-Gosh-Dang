@@ -15,6 +15,11 @@
 @ Change this to UPPER_MODE to demonstrate the other direction in 5.1.2b
 .equ EX1_CASE_MODE, LOWER_MODE
 
+@ Set to 1 to use CRC16-CCITT checksum (bonus task),
+@ set to 0 to use BCC XOR checksum (original).
+@ Must match USE_CRC16 in ex3_uart.s and ex5_combine.s.
+.equ USE_CRC16, 1
+
 
 .data
 string1: .asciz "GROUP 3"   @ source string for all Exercise 1 tasks
@@ -66,12 +71,20 @@ ex1_case_done:
     BL str_reset_counter        @ R2 = 0
     BL str_concat               @ R2 = total packet length
 
-    @ ===== Task 5.1.2d — compute and append BCC checksum =====
-    BL str_checksum             @ R3 = checksum value, appended to buffer
-                                @ R2 = updated length (now includes checksum byte)
+    @ ===== Task 5.1.2d — compute and append checksum =====
+.if USE_CRC16
+    BL str_crc16_checksum       @ CRC16-CCITT: appends 2 bytes, updates length byte
+.else
+    BL str_checksum             @ BCC XOR: appends 1 byte, updates length byte
+.endif
+                                @ R2 = updated length (now includes checksum)
 
     @ ===== Task 5.1.2e — verify the checksum (R3 = 0x00 if valid) =====
-    @ R1 = buffer, R2 = full packet length (set by str_checksum above)
+    @ R1 = buffer, R2 = full packet length (set by checksum function above)
+.if USE_CRC16
+    BL str_verify_crc16         @ R3 = 0x00 means packet is intact
+.else
     BL str_verify_checksum      @ R3 = 0x00 means packet is intact
+.endif
 
     POP {R4, PC}

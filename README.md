@@ -37,6 +37,16 @@ This project implements all five exercises from the MTRX2700 Assembly Lab using 
 
 To switch between exercises, change the `BL ex5_run_demo` call in `main.s` to `BL ex1_run_demo`, `BL ex2_run_demo`, etc.
 
+### Checksum Mode — `USE_CRC16`
+
+All three exercises that produce or consume checksummed packets (Exercise 1, Exercise 3, and Exercise 5) declare a matching constant:
+
+```asm
+.equ USE_CRC16, 1   @ 1 = CRC16-CCITT (bonus), 0 = BCC XOR (original)
+```
+
+Set this to the same value in `ex1_memory.s`, `ex3_uart.s`, and `ex5_combine.s` before building. When `USE_CRC16 = 1`, the assembler selects `str_crc16_checksum` / `str_verify_crc16` (2 checksum bytes, big-endian); when `USE_CRC16 = 0`, it selects `str_checksum` / `str_verify_checksum` (1 checksum byte). The `uart_read_check` function in `uart.s` must also be rebuilt with the matching flag. Both boards in Exercise 5 must use the same value.
+
 ### Hardware Connections (Exercise 3 and 5)
 
 - PC10 (TX) on Board 1 → PC11 (RX) on Board 2
@@ -59,7 +69,7 @@ Demonstrates string manipulation and packet framing using the `str_` module. The
 
 ### Usage
 
-Set `EX1_CASE_MODE` at the top of `ex1_memory.s` to `LOWER_MODE` or `UPPER_MODE` before building. Call `ex1_run_demo` from `main.s`. Observe results in the debugger memory view.
+Set `EX1_CASE_MODE` at the top of `ex1_memory.s` to `LOWER_MODE` or `UPPER_MODE` before building. Set `USE_CRC16` to `1` for CRC16-CCITT or `0` for BCC XOR (must match `ex3_uart.s` and `ex5_combine.s`). Call `ex1_run_demo` from `main.s`. Observe results in the debugger memory view.
 
 ### Valid Inputs
 
@@ -68,8 +78,10 @@ Set `EX1_CASE_MODE` at the top of `ex1_memory.s` to `LOWER_MODE` or `UPPER_MODE`
 | `str_count` | R1 = string address, R2 = 0 | Any NUL-terminated string in RAM |
 | `str_lower_case` / `str_upper_case` | R1 = string address, R3 = 0 | ASCII strings; non-letter bytes are skipped |
 | `str_concat` | R0 = source string, R1 = dest buffer, R2 = 0 | Source must be NUL-terminated; dest buffer must be ≥ source length + 4 bytes |
-| `str_checksum` | R1 = buffer, R2 = packet length before checksum | Must be called after `str_concat`; buffer must have at least 1 byte spare |
-| `str_verify_checksum` | R1 = buffer, R2 = total packet length | Must include the checksum byte in R2 |
+| `str_checksum` | R1 = buffer, R2 = packet length before checksum | `USE_CRC16 = 0`; buffer must have at least 1 byte spare |
+| `str_crc16_checksum` | R1 = buffer, R2 = packet length before CRC bytes | `USE_CRC16 = 1`; buffer must have at least 2 bytes spare |
+| `str_verify_checksum` | R1 = buffer, R2 = total packet length | `USE_CRC16 = 0`; R2 must include the checksum byte |
+| `str_verify_crc16` | R1 = buffer, R2 = total packet length | `USE_CRC16 = 1`; R2 must include both CRC bytes |
 
 ### Functions and Modularity
 
@@ -81,19 +93,23 @@ All string helpers live in `string.s` and use the `str_` prefix. They are statel
 
 **`str_concat`** — Builds the UART frame: writes STX at index 0, copies the source body starting at index 2, appends a NUL terminator, then ETX. The final packet length (before checksum) is stored at index 1.
 
-**`str_checksum`** — XORs every byte from index 0 up to the current end of the packet and appends the result. Updates the length byte at index 1 to include the checksum byte. After this call the packet is ready to transmit.
+**`str_checksum`** — XORs every byte from index 0 up to the current end of the packet and appends the result. Updates the length byte at index 1 to include the checksum byte. After this call the packet is ready to transmit. Used when `USE_CRC16 = 0`.
 
-**`str_verify_checksum`** — XORs all bytes including the checksum. Returns R3 = 0x00 if intact, non-zero otherwise.
+**`str_verify_checksum`** — XORs all bytes including the checksum. Returns R3 = 0x00 if intact, non-zero otherwise. Used when `USE_CRC16 = 0`.
+
+**`str_crc16_checksum`** — Computes a CRC16-CCITT checksum (polynomial `0x1021`, init `0xFFFF`) over all bytes in the packet and appends the result as two bytes big-endian (high byte first). Updates the length byte at index 1 to include both CRC bytes. Used when `USE_CRC16 = 1`.
+
+**`str_verify_crc16`** — Recomputes the CRC16 over the data bytes, then compares against the two stored CRC bytes. Returns R3 = 0x00 if valid, non-zero if invalid. Used when `USE_CRC16 = 1`.
 
 ### Testing
 
 **Planned inputs and expected outputs:**
 
-| Input string | Expected length | Case result (LOWER) | Frame structure |
-|---|---|---|---|
-| `"GROUP 3"` | 7 | `"group 3"` | `[02][0D][group 3][00][03][CS]` |
-| `"A"` | 1 | `"a"` | `[02][07][a][00][03][CS]` |
-| `""` (empty) | 0 | `""` | `[02][06][][00][03][CS]` |
+| Input string | Expected length | Case result (LOWER) | Frame — BCC (`USE_CRC16=0`) | Frame — CRC16 (`USE_CRC16=1`) |
+|---|---|---|---|---|
+| `"GROUP 3"` | 7 | `"group 3"` | `[02][0D][group 3][00][03][CS]` | `[02][0E][group 3][00][03][CRC_HI][CRC_LO]` |
+| `"A"` | 1 | `"a"` | `[02][07][a][00][03][CS]` | `[02][08][a][00][03][CRC_HI][CRC_LO]` |
+| `""` (empty) | 0 | `""` | `[02][06][][00][03][CS]` | `[02][07][][00][03][CRC_HI][CRC_LO]` |
 
 **Edge cases considered:**
 - Empty string: `str_count` returns R2 = 0 immediately; `str_concat` still produces a valid frame with an empty body
@@ -103,9 +119,9 @@ All string helpers live in `string.s` and use the `str_` prefix. They are statel
 **Checksum verification:** Build a known packet, manually flip one byte in the buffer, and confirm `str_verify_checksum` returns R3 ≠ 0. Restore the byte and confirm R3 = 0.
 
 **Constraints and limitations:**
-- No overflow protection: if the source string is longer than the destination buffer minus 4 bytes, the packet framing will write past the end of the buffer
+- No overflow protection: if the source string is longer than the destination buffer minus overhead, the packet framing will write past the end of the buffer (BCC overhead = 4 bytes; CRC16 overhead = 5 bytes)
 - `str_count` assumes the string is NUL-terminated; a string without a NUL will cause an infinite loop
-- BCC checksum does not detect transposed bytes or even numbers of identical bit errors
+- BCC checksum does not detect transposed bytes or even numbers of identical bit errors; CRC16-CCITT is significantly more robust
 
 ---
 
@@ -174,7 +190,7 @@ Demonstrates UART4 packet transmission and reception using the `uart_` and `str_
 
 ### Usage
 
-Call `ex3_run_demo` from `main.s`. Connect UART4 TX/RX to a second board or serial terminal configured for 115200 baud, 8N1.
+Call `ex3_run_demo` from `main.s`. Connect UART4 TX/RX to a second board or serial terminal configured for 115200 baud, 8N1. Set `USE_CRC16` at the top of `ex3_uart.s` to the same value as `ex1_memory.s` and `ex5_combine.s`.
 
 ### Valid Inputs
 
@@ -188,7 +204,7 @@ Call `ex3_run_demo` from `main.s`. Connect UART4 TX/RX to a second board or seri
 
 **`uart_transmit`** (`uart.s`) — Polls the TXE flag before writing each byte to TDR. Transmits exactly R2 bytes. Does not add framing; the packet must already be formatted by `str_concat` / `str_checksum` before calling.
 
-**`uart_read_check`** (`uart.s`) — Validates a received packet in five steps: STX check, NUL terminator position, ETX position, XOR checksum, and byte count. Copies the body to R2 on success. Sends a framed ACK or NAK reply in both cases.
+**`uart_read_check`** (`uart.s`) — Validates a received packet in five steps: STX check, NUL terminator position, ETX position, checksum verification, and byte count. When `USE_CRC16 = 1` it calls `str_verify_crc16` (2-byte CRC); when `USE_CRC16 = 0` it calls `str_verify_checksum` (1-byte BCC). Copies the body to R2 on success. Sends a framed ACK or NAK reply in both cases.
 
 **`uart_receive_packet`** (`uart.s`) — Low-level polling receiver. Blocks on the RXNE flag for each byte. Used by Exercise 5 to receive packet bytes in two phases (header first, body second) without requiring a fixed maximum packet size.
 
@@ -206,11 +222,13 @@ The value is set once in `initialise.s` via `set_baud_rate`. Both boards must us
 
 | Scenario | Expected result |
 |---|---|
-| Valid `"GROUP 3"` packet with correct checksum | `uart_read_check` returns ACK, body copied to destination |
-| Packet with one byte flipped | Checksum fails, NAK returned |
+| Valid `"GROUP 3"` packet with correct checksum (`USE_CRC16=0`) | `uart_read_check` returns ACK, body copied to destination |
+| Valid `"GROUP 3"` packet with correct CRC16 (`USE_CRC16=1`) | `uart_read_check` returns ACK, body copied to destination |
+| Packet with one byte flipped | Checksum/CRC fails, NAK returned |
 | STX byte missing (replaced with 0x00) | First check fails, NAK returned immediately |
 | ETX byte replaced | Third check fails, NAK returned |
 | Length byte reduced by 1 | NUL terminator check fails, NAK returned |
+| `USE_CRC16` mismatch between TX and RX boards | CRC check fails, NAK returned |
 
 **Oscilloscope test:** Probe PC10 (TX) while transmitting. Verify the baud period matches the configured rate. At 115200 baud each bit should be approximately 8.68 µs wide.
 

@@ -17,6 +17,11 @@
 .equ EX3_BAUD_9600,   833   @ 9600 baud at 8MHz:   8,000,000 / 9600   = 833
 .equ EX3_BAUD_115200,  69   @ 115200 baud at 8MHz: 8,000,000 / 115200 = 69
 
+@ Set to 1 to use CRC16-CCITT checksum (bonus task),
+@ set to 0 to use BCC XOR checksum (original).
+@ Must match USE_CRC16 in ex1_memory.s and ex5_combine.s.
+.equ USE_CRC16, 1
+
 
 .data
 ex3_msg:    .asciz "GROUP 3"    @ message string to transmit in 5.3.2a
@@ -55,7 +60,11 @@ ex3_run_demo:
     LDR R1, =ex3_tx_buf         @ R1 = destination buffer
     BL str_reset_counter        @ R2 = 0
     BL str_concat               @ format [STX][Len][Body][ETX] -> R2 = packet length
-    BL str_checksum             @ append checksum -> R2 = full packet length
+.if USE_CRC16
+    BL str_crc16_checksum       @ CRC16-CCITT: appends 2 bytes -> R2 = full packet length
+.else
+    BL str_checksum             @ BCC XOR: appends 1 byte -> R2 = full packet length
+.endif
 
     @ Each button press sends the complete packet over UART4
     LDR R8, =ex3_task_transmit  @ R8 = transmit wrapper
