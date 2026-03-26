@@ -46,11 +46,13 @@ initialise_io:
 	ORR R1, R1, #(0xA << 20) @ set 10_10 = AF mode for both pins
 	STR R1, [R0, #MODER]
 
-	@ Configure PA1 as pull-down for gpio_do_task_pa0 exit input
+	@ Configure PA1 as pull-up for gpio_do_task_pa0 exit input.
+	@ Active-low: PA1 reads HIGH when floating, LOW only when driven to GND.
+	@ This means disconnecting the wire reliably releases the pin HIGH.
     LDR R0, =GPIOA
     LDR R1, [R0, #PUPDR]
     BIC R1, R1, #(0x3 << PA1_PUPDR_OFFSET)
-    ORR R1, R1, #(0x2 << PA1_PUPDR_OFFSET)   @ 10 = pull-down
+    ORR R1, R1, #(0x1 << PA1_PUPDR_OFFSET)   @ 01 = pull-up
     STR R1, [R0, #PUPDR]
 
 	BX LR
