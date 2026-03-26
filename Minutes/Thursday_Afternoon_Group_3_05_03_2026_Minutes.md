@@ -19,7 +19,7 @@ MTRX lab session – working through assignment tasks (string manipulation, ASCI
 ---
 
 ## Previous Actions
-- No previous actions recorded (first meeting).
+- See minutes from 26/02.
 
 ---
 
@@ -51,7 +51,7 @@ MTRX lab session – working through assignment tasks (string manipulation, ASCI
 ---
 
 ## New Items
-- No new items raised.
+- See above.
 
 ---
 
