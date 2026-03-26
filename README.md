@@ -45,7 +45,7 @@ To switch between exercises, change the `BL ex5_run_demo` call in `main.s` to `B
 
 ---
 
-## Exercise 1 — Memory and Pointers
+## Exercise 1 — Strings Operations
 
 ### Summary
 
@@ -261,9 +261,9 @@ Call `ex4_run_demo` from `main.s`. The sub-tasks run in sequence and do not requ
 | 1 µs | 7 | 1 µs | ~4295 s (71 min) |
 | 0.1 ms | 799 | 100 µs | ~429,496 s (119 h) |
 | 1 ms | 7999 | 1 ms | ~4,294,967 s (49 days) |
-| 1 hour | 35999 | 4.5 µs | 4,294,967,295 × 4.5 µs ≈ 5.4 h (fits) |
+| 1 hour | 35999 | 4.5 ms | 4,294,967,295 × 4.5 µs ≈ 5.4 h (fits) |
 
-For a 1-hour delay, PSC = 35999 (4.5 µs/tick) and ARR = 800,000,000 fits within TIM2's 32-bit counter.
+For a 1-hour delay, PSC = 35999 (4.5 ms/tick) and ARR = 800,000,000 fits within TIM2's 32-bit counter.
 
 ### Testing
 
