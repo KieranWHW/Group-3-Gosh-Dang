@@ -69,23 +69,26 @@ ex3_run_demo:
     @ Each button press sends the complete packet over UART4
     LDR R8, =ex3_task_transmit  @ R8 = transmit wrapper
     MOV R11, #TASK_MODE_ONCE    @ one transmission per tap
-    BL gpio_do_task_pa0         @ blocks until PA1 goes HIGH to exit
+    @BL gpio_do_task_pa0         @ blocks until PA1 goes HIGH to exit
 
     @ ===== Task 5.3.2b — receive and validate a UART packet =====
     @ R1 points to ex3_tx_buf (the packet we just built) as a single-board test
     @ For two-board comms: point R1 at a buffer filled by polling RXNE first
     LDR R1, =ex3_tx_buf         @ R1 = packet to validate
     LDR R2, =ex3_rx_buf         @ R2 = destination buffer for the extracted string body
-    BL uart_read_check          @ validates packet, copies body to R2, sends ACK or NAK
+    @BL uart_read_check          @ validates packet, copies body to R2, sends ACK or NAK
 
-    @ ===== Task 5.3.2c — clock speed / baud rate demo =====
-    @ To demonstrate: change BAUD_RATE in definitions.s to EX3_BAUD_9600 (833)
-    @ then rebuild and confirm comms still work at 9600 baud on both boards.
-    @ Switching back to EX3_BAUD_115200 (69) restores normal operation.
-    @ The calculation is: BRR = f_PCLK / baud_rate (integer division, no oversampling)
+	@ ===== Task 5.3.2c — clock speed / baud rate demo =====
+
+    @ Switch PLL on (8MHz HSI/2 × 9 = 36MHz), BRR auto-updated to 312
+    @         baud rate stays at 115200 despite the clock change
+    BL   enable_pll
+
+    LDR  R8,  =ex3_task_transmit
+    MOV  R11, #TASK_MODE_ONCE
+    BL   gpio_do_task_pa0           @ button press → send packet at 115200 on 36MHz
 
     POP {PC}
-
 
 @ ========== Transmit Task Wrapper ==========
 

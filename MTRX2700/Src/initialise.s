@@ -171,3 +171,52 @@ enable_timer:
 	STR R1, [R0, #TIM_SR]
 
 	BX LR
+
+
+
+@ Switch system clock from HSI (8MHz) to PLL (36MHz via HSI/2 × 9)
+@ Then update UART4 BRR so baud rate stays correct at the new clock
+@   + Input:  None
+@   + Output: None
+@   + Modifies: R0, R1
+enable_pll:
+    PUSH {LR}
+    LDR R0, =RCC
+
+    @ Configure PLL: source = HSI/2, multiplier = ×9 (→ 36MHz)
+    LDR R1, [R0, #RCC_CFGR]
+    BIC R1, R1, #(0xF << PLLMUL)       @ clear old multiplier bits [21:18]
+    ORR R1, R1, #(PLLMUL_X9 << PLLMUL) @ set ×9
+    BIC R1, R1, #(1 << PLLSRC)         @ source = HSI/2 (bit 16 = 0)
+    STR R1, [R0, #RCC_CFGR]
+
+    @ Turn PLL on
+    LDR R1, [R0, #RCC_CR]
+    ORR R1, R1, #(1 << PLLON)
+    STR R1, [R0, #RCC_CR]
+
+    @ Wait until PLL is locked (PLLRDY = 1)
+wait_pll:
+    LDR R1, [R0, #RCC_CR]
+    TST R1, #(1 << PLLRDY)
+    BEQ wait_pll
+
+    @ Switch system clock to PLL (SW = 10)
+    LDR R1, [R0, #RCC_CFGR]
+    BIC R1, R1, #(0x3 << SW)           @ clear SW bits
+    ORR R1, R1, #(0x2 << SW)           @ 10 = PLL selected
+    STR R1, [R0, #RCC_CFGR]
+
+    @ Wait until the switch is confirmed (SWS = 10)
+wait_sws:
+    LDR R1, [R0, #RCC_CFGR]
+    AND R1, R1, #(0x3 << SWS)
+    CMP R1, #(0x2 << SWS)
+    BNE wait_sws
+
+    @ Step 6 — update BRR for the new clock (36MHz / 115200 = 312)
+    LDR R0, =UART4
+    MOV R1, #BRR_PLL_115200
+    STR R1, [R0, #UART_BRR]
+
+    POP {PC}

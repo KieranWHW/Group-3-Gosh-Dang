@@ -4,6 +4,12 @@
 
 #include "definitions.s"
 
+@ Set to 1 to use CRC16-CCITT checksum (bonus task),
+@ set to 0 to use BCC XOR checksum (original).
+@ Must match USE_CRC16 in ex1_memory.s, ex3_uart.s, and ex5_combine.s.
+@ Tip: consider moving this to definitions.s to have a single source of truth.
+.equ USE_CRC16, 1
+
 .data
 ack_nak_src:  .space 2             @ ACK/NAK byte + NUL terminator
 response_buf: .space 16            @ framed ACK/NAK response packet
@@ -53,8 +59,12 @@ uart_transmit_loop:
 @   1) STX present
 @   2) NUL terminator at expected index
 @   3) ETX at expected index
-@   4) checksum valid
+@   4) checksum valid (BCC or CRC16 depending on USE_CRC16)
 @   5) copied byte count matches packet length
+@
+@ Packet layout:
+@   USE_CRC16 = 0 (BCC):   [STX][LEN][body][NUL][ETX][CS]        (NUL at LEN-3)
+@   USE_CRC16 = 1 (CRC16): [STX][LEN][body][NUL][ETX][CHI][CLO]  (NUL at LEN-4)
 @
 @ A framed ACK or NAK reply is transmitted on UART4.
 @   + Input:  R1 = received packet address
@@ -75,22 +85,32 @@ uart_read_check:
     @ Read total packet length.
     LDRB R2, [R1, #1]
 
-    @ Check 2: packet must contain a NUL terminator at length - 3.
+    @ Check 2: packet must contain a NUL terminator.
+    @ BCC:   NUL is at index LEN-3 (1 checksum byte at end)
+    @ CRC16: NUL is at index LEN-4 (2 checksum bytes at end)
+.if USE_CRC16
+    SUBS R8, R2, #4
+.else
     SUBS R8, R2, #3
+.endif
     LDRB R3, [R1, R8]
     CMP R3, #0x00
     BNE uart_nak_response
 
-    @ Check 3: ETX must follow the NUL terminator.
+    @ Check 3: ETX must follow the NUL terminator (always one byte after NUL).
     ADDS R8, R8, #1
     LDRB R3, [R1, R8]
     CMP R3, #ETX
     BNE uart_nak_response
 
-    @ Check 4: XOR of whole packet including checksum must be zero.
+    @ Check 4: verify checksum over the whole packet.
+.if USE_CRC16
+    BL str_verify_crc16            @ R3 = 0 if CRC16 matches
+.else
     MOV R5, #0x00
     MOV R3, #0x00
-    BL str_verify_checksum
+    BL str_verify_checksum         @ R3 = 0 if BCC XOR is zero
+.endif
     CMP R3, #0x00
     BNE uart_nak_response
 
@@ -110,9 +130,15 @@ uart_read_loop:
     B uart_read_loop
 
 uart_read_check_count:
-    @ R4 includes the copied body bytes, including the NUL terminator.
-    @ Add 4 for STX + Length + ETX + Checksum.
+    @ R4 = body bytes copied (including NUL).
+    @ Add overhead: STX + LEN + ETX + checksum byte(s).
+    @ BCC:   overhead = 4 (1 checksum byte)
+    @ CRC16: overhead = 5 (2 checksum bytes)
+.if USE_CRC16
+    ADDS R4, R4, #5
+.else
     ADDS R4, R4, #4
+.endif
     CMP R4, R9
     BNE uart_nak_response
 
@@ -137,11 +163,15 @@ uart_build_response:
     MOV R7, #0x00
     STRB R7, [R0, #1]
 
-    @ Frame the response packet.
+    @ Frame the response packet and append checksum.
     LDR R1, =response_buf
     BL str_reset_counter
     BL str_concat
-    BL str_checksum
+.if USE_CRC16
+    BL str_crc16_checksum          @ CRC16-CCITT: appends 2 bytes
+.else
+    BL str_checksum                @ BCC XOR: appends 1 byte
+.endif
 
     @ Transmit the response.
     LDR R1, =response_buf

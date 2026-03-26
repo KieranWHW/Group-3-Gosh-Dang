@@ -5,6 +5,27 @@
 .equ AHBENR, 0x14 @ AHB peripheral clock enable register offset
 .equ APB1ENR, 0x1C @ APB1 peripheral clock enable register offset
 
+@ =============================================
+@ RCC PLL / Clock Config Registers (for 5.3.2c)
+@ =============================================
+.equ RCC_CR,     0x00   @ clock control register (PLLON, PLLRDY, HSION, HSIRDY)
+.equ RCC_CFGR,   0x04   @ clock config: PLL source, multiplier, system clock switch
+.equ RCC_CFGR2,  0x2C   @ PLL input predivider
+
+@ CFGR bit fields
+.equ SW,         0      @ [1:0] system clock switch (00=HSI, 10=PLL)
+.equ SWS,        2      @ [3:2] system clock switch status (read to confirm)
+.equ PLLSRC,     16     @ PLL source: 0=HSI/2, 1=HSI (with prediv)
+.equ PLLMUL,     18     @ [21:18] PLL multiplier (0010=×4, 0111=×9, etc.)
+
+@ CR bit fields
+.equ PLLON,      24     @ enable PLL
+.equ PLLRDY,     25     @ PLL locked (ready) flag
+
+@ Baud rate for the new clock speed (36MHz PLL, 115200 baud)
+.equ BRR_PLL_115200, 312   @ 36,000,000 / 115200 = 312
+.equ PLLMUL_X9,  0x7       @ 0111 = ×9 multiplier → HSI/2 (4MHz) × 9 = 36MHz
+
 
 @ =============================================
 @ GPIO Common Register Offsets
@@ -60,8 +81,8 @@
 .equ UART_RDR, 0x24 @ receive data register offset
 .equ TXE, 7 @ transmit data register empty flag in ISR
 .equ RXNE, 5 @ read data register not empty flag in ISR
-@ .equ BAUD_RATE, 833 @ 9600 baud at 8MHz (for clock speed demo)
-.equ BAUD_RATE, 69 @ 115200 baud at 8MHz
+.equ BAUD_RATE, 833 @ 9600 baud at 8MHz (for clock speed demo)
+@.equ BAUD_RATE, 69 @ 115200 baud at 8MHz
 .equ ACK, 0x06 @ acknowledge character
 .equ NAK, 0x15 @ negative acknowledge character
 .equ TC,        6       @ Transmission complete flag in UART_ISR

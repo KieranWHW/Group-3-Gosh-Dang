@@ -23,7 +23,7 @@ main:
     BL enable_uart
     BL enable_timer
 
-    BL ex5_run_demo     @ swap this to ex1_, ex2_, ex3_, or ex4_ to select exercise
+    BL ex3_run_demo     @ swap this to ex1_, ex2_, ex3_, or ex4_ to select exercise
 
 end:
     B end               @ infinite loop to prevent falling off into undefined memory

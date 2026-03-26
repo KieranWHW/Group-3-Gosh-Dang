@@ -46,6 +46,15 @@ initialise_io:
 	ORR R1, R1, #(0xA << 20) @ set 10_10 = AF mode for both pins
 	STR R1, [R0, #MODER]
 
+	@ Configure PA1 as pull-up for gpio_do_task_pa0 exit input.
+	@ Active-low: PA1 reads HIGH when floating, LOW only when driven to GND.
+	@ This means disconnecting the wire reliably releases the pin HIGH.
+    LDR R0, =GPIOA
+    LDR R1, [R0, #PUPDR]
+    BIC R1, R1, #(0x3 << PA1_PUPDR_OFFSET)
+    ORR R1, R1, #(0x1 << PA1_PUPDR_OFFSET)   @ 01 = pull-up
+    STR R1, [R0, #PUPDR]
+
 	BX LR
 
 
@@ -162,3 +171,33 @@ enable_timer:
 	STR R1, [R0, #TIM_SR]
 
 	BX LR
+
+
+@ Reconfigure UART4 baud rate at runtime (safe UE toggle)
+@ Input:  R0 = new BRR value (e.g. EX3_BAUD_9600 or EX3_BAUD_115200)
+@ Output: None
+@ Modifies: R0, R1, R2
+reconfigure_uart_baud:
+    PUSH {R2, LR}
+    LDR R2, =UART4
+
+    @ Wait until any in-progress transmission is complete
+wait_tc_reconf:
+    LDR R1, [R2, #UART_ISR]
+    TST R1, #(1 << TC)
+    BEQ wait_tc_reconf
+
+    @ Disable UART (must clear UE before writing BRR per STM32 ref manual)
+    LDR R1, [R2, #UART_CR1]
+    BIC R1, R1, #1              @ clear bit 0 (UE)
+    STR R1, [R2, #UART_CR1]
+
+    @ Write the new baud rate divisor
+    STR R0, [R2, #UART_BRR]
+
+    @ Re-enable UART
+    LDR R1, [R2, #UART_CR1]
+    ORR R1, R1, #1              @ set bit 0 (UE)
+    STR R1, [R2, #UART_CR1]
+
+    POP {R2, PC}
