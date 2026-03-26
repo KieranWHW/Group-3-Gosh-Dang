@@ -1,6 +1,6 @@
 # Gosh Dang Meeting Minutes
 
-**MTRX Group #? – "Gosh Dang"**
+**MTRX Group 3 – "Gosh Dang"**
 **Date:** 05/03/2026
 
 ---
