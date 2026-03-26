@@ -37,6 +37,29 @@ This project implements all five exercises from the MTRX2700 Assembly Lab using 
 
 To switch between exercises, change the `BL ex5_run_demo` call in `main.s` to `BL ex1_run_demo`, `BL ex2_run_demo`, etc.
 
+### New Constants Added to `definitions.s` (Exercise 3 — 5.3.2c)
+
+The following RCC and PLL constants were added to support the runtime clock-speed demo:
+
+```asm
+@ RCC clock config registers
+.equ RCC_CR,          0x00   @ clock control (PLLON, PLLRDY)
+.equ RCC_CFGR,        0x04   @ clock config (PLL source, multiplier, SW/SWS)
+.equ RCC_CFGR2,       0x2C   @ PLL input predivider
+
+@ CFGR / CR bit positions
+.equ SW,              0      @ [1:0] system clock switch
+.equ SWS,             2      @ [3:2] switch status (read-back)
+.equ PLLSRC,          16     @ PLL source: 0 = HSI/2
+.equ PLLMUL,          18     @ [21:18] PLL multiplier
+.equ PLLON,           24     @ enable PLL
+.equ PLLRDY,          25     @ PLL lock flag
+
+@ Derived BRR and multiplier values
+.equ BRR_PLL_115200,  312    @ 36,000,000 / 115,200 = 312
+.equ PLLMUL_X9,       0x7    @ 0111 = ×9 → HSI/2 (4MHz) × 9 = 36MHz
+```
+
 ### Checksum Mode — `USE_CRC16`
 
 All three exercises that produce or consume checksummed packets (Exercise 1, Exercise 3, and Exercise 5) declare a matching constant:
@@ -186,11 +209,13 @@ Demonstrates UART4 packet transmission and reception using the `uart_` and `str_
 
 - **5.3.2a:** Builds a UART packet from the string `"GROUP 3"` and transmits it each time PA0 is pressed. Pull PA1 HIGH to exit the transmit loop
 - **5.3.2b:** Validates the received packet structure and checksum, copies the body to a destination buffer, and replies with a framed ACK or NAK
-- **5.3.2c:** Baud rate reconfiguration — change `BAUD_RATE` in `definitions.s` to `833` for 9600 baud or `69` for 115200 baud. Rebuild and confirm communication still works at the new rate
+- **5.3.2c:** Clock speed / baud rate demo — switches the system clock from 8 MHz HSI to 36 MHz via PLL (HSI/2 × 9), then recalculates and rewrites the UART4 BRR register so the baud rate stays correct at 115200. Demonstrates that BRR is a clock divisor, not an absolute baud rate value: changing `f_PCLK` without updating BRR silently breaks communication
 
 ### Usage
 
 Call `ex3_run_demo` from `main.s`. Connect UART4 TX/RX to a second board or serial terminal configured for 115200 baud, 8N1. Set `USE_CRC16` at the top of `ex3_uart.s` to the same value as `ex1_memory.s` and `ex5_combine.s`.
+
+For 5.3.2c, the clock switch and BRR update happen automatically at runtime via `enable_pll` — no rebuild is required. The board starts at 8 MHz (HSI, BRR = 833 for 9600 baud), transmits one packet on button press, then switches the PLL on (36 MHz, BRR = 312 for 115200 baud) and transmits a second packet on the next button press. Both boards must be at the same baud rate at each step.
 
 ### Valid Inputs
 
@@ -208,13 +233,22 @@ Call `ex3_run_demo` from `main.s`. Connect UART4 TX/RX to a second board or seri
 
 **`uart_receive_packet`** (`uart.s`) — Low-level polling receiver. Blocks on the RXNE flag for each byte. Used by Exercise 5 to receive packet bytes in two phases (header first, body second) without requiring a fixed maximum packet size.
 
+**`enable_pll`** (`initialise.s`) — Switches the system clock from 8 MHz HSI to 36 MHz at runtime using the STM32 PLL (source: HSI/2 = 4 MHz, multiplier: ×9). Sequence: configure PLLMUL in `RCC_CFGR`, set `PLLON` in `RCC_CR`, poll `PLLRDY` until the PLL locks, switch `SW` to PLL in `RCC_CFGR`, poll `SWS` until the switch is confirmed, then immediately update `UART4_BRR` to `BRR_PLL_115200 = 312`. If BRR is not updated after the clock change, the baud rate silently shifts from 115200 to an incorrect value and communication breaks.
+
+**`reconfigure_uart_baud`** (`initialise.s`) — Safely changes the UART4 baud rate at runtime. Waits for the TC (transmission complete) flag, clears UE (UART enable) as required by the STM32 reference manual before writing BRR, writes the new divisor, then re-enables UE. Takes the new BRR value in R0.
+
 **Baud rate calculation:**
 ```
 BRR = f_PCLK / baud_rate
-9600 baud:   8,000,000 / 9,600   = 833
-115200 baud: 8,000,000 / 115,200 = 69
+
+At 8 MHz HSI (boot default):
+  9600 baud:   8,000,000 /  9,600 = 833
+  115200 baud: 8,000,000 / 115,200 = 69
+
+At 36 MHz PLL (after enable_pll):
+  115200 baud: 36,000,000 / 115,200 = 312
 ```
-The value is set once in `initialise.s` via `set_baud_rate`. Both boards must use the same value.
+`BAUD_RATE` in `definitions.s` sets the initial BRR written at boot by `set_baud_rate`. After calling `enable_pll`, the BRR is automatically updated to `BRR_PLL_115200`. Both boards must use the same BRR value (i.e. be at the same clock speed) at each step of the demo.
 
 ### Testing
 
@@ -232,7 +266,12 @@ The value is set once in `initialise.s` via `set_baud_rate`. Both boards must us
 
 **Oscilloscope test:** Probe PC10 (TX) while transmitting. Verify the baud period matches the configured rate. At 115200 baud each bit should be approximately 8.68 µs wide.
 
-**Baud rate demo (5.3.2c):** Change `BAUD_RATE` to 833, rebuild both boards. Confirm ACK/NAK exchange still works. Change back to 69 and confirm again.
+**Baud rate / clock speed demo (5.3.2c):**
+1. Boot both boards. Receiver terminal set to 9600 baud. Press button on Board 1 — confirm packet arrives at 9600 baud (BRR = 833, 8 MHz HSI).
+2. `enable_pll` runs automatically. Switch receiver terminal to 115200 baud. Press button again — confirm packet arrives cleanly at 115200 baud (BRR = 312, 36 MHz PLL).
+3. **Failure case to demonstrate:** Comment out the BRR update inside `enable_pll`, rebuild, repeat step 2. The receiver should see garbled data, proving that BRR must be recalculated after every clock change.
+
+**Oscilloscope verification:** Probe PC10 (TX). At 9600 baud each bit = ~104 µs. At 115200 baud each bit = ~8.68 µs. After the PLL switch the bit period should halve, confirming the clock change took effect.
 
 **Constraints and limitations:**
 - Polling-based: the CPU is blocked during both transmit and receive; no other tasks can run concurrently
