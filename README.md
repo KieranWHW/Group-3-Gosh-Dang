@@ -2,12 +2,12 @@
 
 ## Group Members
 
-| Name | Role |
-|------|------|
-| [Name 1] | Exercise 1 (Memory & Strings), string.s module |
-| [Name 2] | Exercise 2 (Digital I/O), gpio.s / led.s modules |
-| [Name 3] | Exercise 3 (UART), uart.s module |
-| [Name 4] | Exercise 4 (Timers) / Exercise 5 (Integration), timer.s module |
+| Name |
+|------|
+| Dang Khoa Huynh |
+| Joshua Bolton |
+| Milly O'Connell |
+| Kieran Han Wei Wong |
 
 ---
 
