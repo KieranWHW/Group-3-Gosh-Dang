@@ -1,6 +1,6 @@
 # Gosh Dang Meeting Minutes
 
-**MTRX Group #? – "Gosh Dang"**
+**MTRX Group 3 – "Gosh Dang"**
 **Date:** 12/03/2026
 
 ---
@@ -53,7 +53,7 @@ MTRX lab session – continuing work on lab tasks 5.1.2 and 5.2.2, including LED
 ---
 
 ## New Items
-- No new items raised.
+- See above.
 
 ---
 
