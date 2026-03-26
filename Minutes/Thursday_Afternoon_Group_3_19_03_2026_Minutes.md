@@ -44,7 +44,7 @@ MTRX lab session – working on tasks 5.3.2 (UART transmission with oscilloscope
 ---
 
 ## New Items
-- No new items raised.
+- See above.
 
 ---
 
