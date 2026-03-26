@@ -35,7 +35,7 @@ Online Zoom session – collating and reviewing code worked on outside of class,
 ---
 
 ## New Items
-- No new items raised.
+- See above.
 
 ---
 
