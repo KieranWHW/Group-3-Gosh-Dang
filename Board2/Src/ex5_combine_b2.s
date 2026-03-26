@@ -19,9 +19,23 @@
 @   - UART errors and stale bytes are drained at the top of
 @     every receive loop to prevent ORE lockups after bad packets
 
+@ Set to 1 to use CRC16-CCITT checksum (bonus task),
+@ set to 0 to use BCC XOR checksum (original).
+@ Both boards must use the same value as ex5_combine.s.
+.equ USE_CRC16, 1
+
 .equ STARTUP_DELAY_MS,    500
 .equ LED_HALF_PERIOD_MS,  500      @ 0.5 s ON / 0.5 s OFF per spec
-.equ MIN_COUNTER_PKT_LEN, 16      @ STX LEN "COUNTER = X" NUL ETX CS
+
+@ Minimum counter packet length depends on checksum size:
+@   BCC:   STX LEN "COUNTER = X" NUL ETX CS      = 16 bytes
+@   CRC16: STX LEN "COUNTER = X" NUL ETX CH CL   = 17 bytes
+.if USE_CRC16
+.equ MIN_COUNTER_PKT_LEN, 17
+.else
+.equ MIN_COUNTER_PKT_LEN, 16
+.endif
+
 .equ MAX_COUNTER_PKT_LEN, 32
 
 .data
@@ -177,20 +191,30 @@ ex5_b2_validate_counter_packet:
     CMP R3, #STX
     BNE ex5_b2_packet_invalid
 
-    @ Check 2: NUL terminator at LEN-3
+    @ Check 2: NUL terminator position depends on checksum size
+    @ BCC appends 1 byte  -> NUL at LEN-3, ETX at LEN-2
+    @ CRC16 appends 2 bytes -> NUL at LEN-4, ETX at LEN-3
+.if USE_CRC16
+    SUBS R4, R2, #4
+.else
     SUBS R4, R2, #3
+.endif
     LDRB R3, [R1, R4]
     CMP R3, #0
     BNE ex5_b2_packet_invalid
 
-    @ Check 3: ETX at LEN-2
+    @ Check 3: ETX immediately follows NUL (always +1 from NUL position)
     ADDS R4, R4, #1
     LDRB R3, [R1, R4]
     CMP R3, #ETX
     BNE ex5_b2_packet_invalid
 
-    @ Check 4: BCC checksum - XOR of all bytes including checksum = 0
+    @ Check 4: verify checksum (algorithm selected at build time)
+.if USE_CRC16
+    BL str_verify_crc16
+.else
     BL str_verify_checksum
+.endif
     CMP R3, #0
     BNE ex5_b2_packet_invalid
 
@@ -273,7 +297,11 @@ ex5_b2_send_framed_reply:
     LDR R1, =resp_buf_b2
     BL str_reset_counter
     BL str_concat
-    BL str_checksum
+.if USE_CRC16
+    BL str_crc16_checksum           @ CRC16-CCITT: appends 2 bytes
+.else
+    BL str_checksum                 @ BCC XOR: appends 1 byte
+.endif
 
     @ Transmit; packet length is at the LENGTH_BYTE_IDX offset
     LDR R1, =resp_buf_b2

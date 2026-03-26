@@ -67,12 +67,9 @@
 .equ TC,        6       @ Transmission complete flag in UART_ISR
 .equ TCCF,      6       @ Transmission complete clear flag in UART_ICR
 .equ UART_ICR,  0x20
-.equ FE,        1
-.equ NE,        2
 .equ ORE,       3
-.equ FECF,      1
-.equ NECF,      2
 .equ ORECF,     3
+
 
 @ =============================================
 @ Timer 2 Settings
@@ -116,6 +113,13 @@
 
 
 @ =============================================
+@ CRC16-CCITT Constants
+@ =============================================
+.equ CRC16_POLY, 0x1021 @ CRC16-CCITT polynomial (x^16 + x^12 + x^5 + 1)
+.equ CRC16_INIT, 0xFFFF @ initial CRC value
+
+
+@ =============================================
 @ String Constants
 @ =============================================
 .equ MIN_LOWER_CASE, 0x61 @ 'a'
@@ -134,5 +138,3 @@
 @ =============================================
 .equ TASK_MODE_ONCE, 0 @ execute task once per button tap (press + release)
 .equ TASK_MODE_HOLD, 1 @ execute task continuously while button is held
-
-

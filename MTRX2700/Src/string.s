@@ -213,3 +213,136 @@ str_verify_loop:
     EOR  R3, R3, R6
     ADDS R5, R5, #1
     B    str_verify_loop
+
+
+@ -------------------------------------------------------------
+@ str_crc16_checksum
+@ -------------------------------------------------------------
+@ Compute CRC16-CCITT checksum and append 2 bytes to the packet.
+@ Appends CRC high byte then CRC low byte (big-endian).
+@ The length byte is updated to include both CRC bytes.
+@
+@ Algorithm: CRC16-CCITT, poly=0x1021, init=0xFFFF.
+@ Each byte is XORed into the high byte of the running CRC,
+@ then 8 rounds of shift-and-XOR are applied.
+@
+@   + Input:  R1 = packet buffer address
+@             R2 = packet length before CRC bytes are appended
+@   + Output: R2 = updated packet length (original + 2)
+@             R3 = final 16-bit CRC value
+@             CRC stored big-endian at end of packet
+@   + Modifies: R4, R5, R6, R7, R9
+.type str_crc16_checksum, %function
+str_crc16_checksum:
+    PUSH {R4, R5, R6, R7, R9, LR}
+
+    MOV  R5, #0                     @ byte index
+    MOV  R4, R2                     @ original length (CRC stored here after loop)
+    ADDS R2, R2, #2                 @ total length now includes 2 CRC bytes
+    STRB R2, [R1, #LENGTH_BYTE_IDX]
+
+    @ Initialise CRC = 0xFFFF
+    MOV  R3, #0xFF
+    ORR  R3, R3, R3, LSL #8         @ R3 = 0xFFFF
+
+    LDR  R7, =CRC16_POLY            @ R7 = 0x1021
+
+str_crc16_byte_loop:
+    CMP  R5, R4
+    BEQ  str_crc16_store
+
+    LDRB R6, [R1, R5]               @ load next byte
+    LSL  R6, R6, #8                 @ shift into high byte position
+    EOR  R3, R3, R6                 @ crc ^= (byte << 8)
+
+    MOV  R9, #8                     @ 8 bits to process
+
+str_crc16_bit_loop:
+    TST  R3, #0x8000                @ test MSB before shifting
+    LSL  R3, R3, #1                 @ shift CRC left
+    UXTH R3, R3                     @ mask to 16 bits
+    BEQ  str_crc16_skip_poly        @ MSB was 0, no XOR needed
+    EOR  R3, R3, R7                 @ crc ^= polynomial
+
+str_crc16_skip_poly:
+    SUBS R9, R9, #1
+    BNE  str_crc16_bit_loop
+
+    ADDS R5, R5, #1
+    B    str_crc16_byte_loop
+
+str_crc16_store:
+    @ Append CRC big-endian: high byte first, then low byte
+    LSR  R6, R3, #8
+    STRB R6, [R1, R4]               @ CRC high byte
+    ADDS R4, R4, #1
+    STRB R3, [R1, R4]               @ CRC low byte (STRB masks to 8 bits)
+    ADDS R4, R4, #1
+    MOV  R9, #0
+    STRB R9, [R1, R4]               @ trailing NUL for convenience
+
+    POP  {R4, R5, R6, R7, R9, PC}
+
+
+@ -------------------------------------------------------------
+@ str_verify_crc16
+@ -------------------------------------------------------------
+@ Verify a CRC16-CCITT checksum.
+@ Recomputes the CRC over the data bytes (everything except the
+@ last 2 bytes) and compares against the stored CRC.
+@ Uses the same algorithm as str_crc16_checksum.
+@
+@   + Input:  R1 = packet buffer address
+@             R2 = total packet length including both CRC bytes
+@   + Output: R3 = 0x00 if valid, non-zero if invalid
+@   + Modifies: R4, R5, R6, R7, R9
+.type str_verify_crc16, %function
+str_verify_crc16:
+    PUSH {R4, R5, R6, R7, R9, LR}
+
+    SUBS R4, R2, #2                 @ R4 = data length (excludes 2 CRC bytes)
+
+    MOV  R5, #0                     @ byte index
+    MOV  R3, #0xFF
+    ORR  R3, R3, R3, LSL #8         @ R3 = 0xFFFF (CRC init)
+
+    LDR  R7, =CRC16_POLY
+
+str_crc16v_byte_loop:
+    CMP  R5, R4
+    BEQ  str_crc16v_check
+
+    LDRB R6, [R1, R5]
+    LSL  R6, R6, #8
+    EOR  R3, R3, R6
+
+    MOV  R9, #8
+
+str_crc16v_bit_loop:
+    TST  R3, #0x8000
+    LSL  R3, R3, #1
+    UXTH R3, R3
+    BEQ  str_crc16v_skip_poly
+    EOR  R3, R3, R7
+
+str_crc16v_skip_poly:
+    SUBS R9, R9, #1
+    BNE  str_crc16v_bit_loop
+
+    ADDS R5, R5, #1
+    B    str_crc16v_byte_loop
+
+str_crc16v_check:
+    @ Read stored CRC big-endian and reassemble into a 16-bit value
+    LDRB R5, [R1, R4]               @ stored high byte
+    ADDS R4, R4, #1
+    LDRB R6, [R1, R4]               @ stored low byte
+    ORR  R5, R6, R5, LSL #8         @ R5 = stored CRC (16-bit)
+
+    @ Compare computed vs stored; set R3 = 0 on match, 1 on mismatch
+    CMP  R3, R5
+    ITE  EQ                         @ Thumb requires IT block for conditional MOV
+    MOVEQ R3, #0                    @ match = valid
+    MOVNE R3, #1                    @ mismatch = invalid
+
+    POP  {R4, R5, R6, R7, R9, PC}

@@ -19,6 +19,11 @@
 @   - Stale UART RX bytes and error flags are cleared before
 @     every transmission to prevent ORE lockups
 
+@ Set to 1 to use CRC16-CCITT checksum (bonus task),
+@ set to 0 to use BCC XOR checksum (original).
+@ Both boards must use the same value.
+.equ USE_CRC16, 1
+
 .equ BOOT_DELAY_MS, 500
 .equ TX_PERIOD_MS, 1000
 .equ ACK_WAIT_MS,  5000 @ 5s waiting for response
@@ -65,12 +70,16 @@ ex5_transmit_loop:
     MOV R0, R4
     BL int_to_str
 
-    @ Frame the full string: STX | LEN | body | NUL | ETX | checksum
+    @ Frame the full string then append checksum (algorithm selected at build time)
     LDR R0, =counter_buf
     LDR R1, =tx_buf
     BL str_reset_counter
     BL str_concat
-    BL str_checksum
+.if USE_CRC16
+    BL str_crc16_checksum           @ CRC16-CCITT: appends 2 bytes
+.else
+    BL str_checksum                 @ BCC XOR: appends 1 byte
+.endif
 
     @ Flush any stale bytes, clear ORE before transmitting
     BL ex5_uart_clear_errors
@@ -150,7 +159,11 @@ ex5_byte_received:
     BNE ex5_bad_reply
 
     LDRB R2, [R1, #1]
-    CMP R2, #4    @ minimum framed reply: STX LEN ACK ETX
+.if USE_CRC16
+    CMP R2, #5    @ minimum CRC16 reply: STX LEN ACK NUL ETX CRC_HI CRC_LO = 7, floor at 5
+.else
+    CMP R2, #4    @ minimum BCC reply: STX LEN ACK NUL ETX CS = 6, floor at 4
+.endif
     BLT ex5_bad_reply
     CMP R2, #16  @ sanity upper bound
     BGT ex5_bad_reply
