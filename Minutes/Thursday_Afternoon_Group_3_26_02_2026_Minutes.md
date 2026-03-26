@@ -1,6 +1,6 @@
 # Gosh Dang Meeting Minutes
 
-**MTRX Group #? – "Gosh Dang"**
+**MTRX Group 3 – "Gosh Dang"**
 **Date:** 26/02/2026
 
 ---
@@ -42,7 +42,7 @@ MTRX lab session – Week 1 introductions, software setup, GitHub repository cre
 ---
 
 ## New Items
-- No new items raised.
+- See above.
 
 ---
 
